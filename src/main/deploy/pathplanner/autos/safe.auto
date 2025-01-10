@@ -1,0 +1,25 @@
+{
+  "version": "2025.0",
+  "command": {
+    "type": "sequential",
+    "data": {
+      "commands": [
+        {
+          "type": "path",
+          "data": {
+            "pathName": "safe_1"
+          }
+        },
+        {
+          "type": "named",
+          "data": {
+            "name": "g_intake"
+          }
+        }
+      ]
+    }
+  },
+  "resetOdom": true,
+  "folder": "old",
+  "choreoAuto": false
+}
