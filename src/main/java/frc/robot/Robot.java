@@ -7,6 +7,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.subsystems.DriveTrain;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
 
@@ -28,7 +29,10 @@ public class Robot extends TimedRobot implements Loggable{
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    m_robotContainer.SWERVE.DRIVETRAIN.setToCoast();
+
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -39,6 +43,8 @@ public class Robot extends TimedRobot implements Loggable{
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
+    } else {
+      System.out.println("outonomous command null");
     }
   }
 

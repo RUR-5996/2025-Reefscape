@@ -5,15 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "path",+
+          "type": "path",
           "data": {
-            "pathName": "Example Path"
+            "pathName": "Turn right"
           }
         }
       ]
     }
   },
-  "resetOdom": true,
+  "resetOdom": false,
   "folder": null,
   "choreoAuto": false
 }

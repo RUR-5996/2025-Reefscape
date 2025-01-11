@@ -31,7 +31,7 @@ public class RobotContainer {
   private final SendableChooser<Command> autoChooser;
 
   private PowerDistribution pdp;
-  private SwerveDrive SWERVE;
+  public SwerveDrive SWERVE;
   private LEDs LEDController;
   RobotConfig config;
   
@@ -73,7 +73,7 @@ public class RobotContainer {
     AutoBuilder.configure(
       SWERVE::getOdometryPose,
       SWERVE::resetOdometry,
-      SWERVE::getChassisSpeeds,
+      SWERVE::getActualSpeeds,
       (speeds, feedforwards) -> SWERVE.setAutoChassisSpeeds(speeds),
       AutoConstants.autoConfig,
       config,

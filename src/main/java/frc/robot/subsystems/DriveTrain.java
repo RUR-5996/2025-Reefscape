@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -102,5 +103,9 @@ public class DriveTrain {
             rlModule.getState(),
             rrModule.getState()
         };
+    }
+
+    public ChassisSpeeds getSpeeds() {
+        return swerveKinematics.toChassisSpeeds(new SwerveModuleState[]{flModule.getModuleState(), frModule.getModuleState(), rlModule.getModuleState(), rrModule.getModuleState()});
     }
 }

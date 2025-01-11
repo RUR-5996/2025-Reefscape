@@ -31,7 +31,7 @@ import io.github.oblarg.oblog.annotations.Log;
 public class SwerveDrive extends SubsystemBase implements Loggable{
 
     //control variables
-    DriveTrain DRIVETRAIN;
+    public DriveTrain DRIVETRAIN;
 
     PIDController tagController;
     PIDController noteController;
@@ -83,9 +83,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
             DRIVETRAIN.swerveKinematics,
             getHeading(),
             DRIVETRAIN.getModulePositions(),
-            robotPose,
-            VecBuilder.fill(0.001, 0.001, Units.degreesToRadians(0.1)),
-            VecBuilder.fill(0.01, 0.01, Units.degreesToRadians(10)));
+            robotPose);
 
         setFieldOriented();
         angleHoldController.disableContinuousInput();
@@ -114,6 +112,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
 
         deltaTime = Timer.getFPGATimestamp() - prevTime;
         prevTime = Timer.getFPGATimestamp();
+        m_odometry.update(getHeading(), DRIVETRAIN.getModulePositions());
 
         prevRobotPose = m_odometry.getEstimatedPosition();
         robotPose = updateOdometry();
@@ -211,6 +210,10 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     @Log
     public boolean getHoldAngleEnabled() {
         return holdAngleEnabled;
+    }
+
+    public ChassisSpeeds getActualSpeeds() {
+        return DRIVETRAIN.getSpeeds();
     }
 
     public void setFieldOriented() {

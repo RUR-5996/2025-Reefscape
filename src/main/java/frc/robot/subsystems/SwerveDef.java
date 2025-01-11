@@ -1,7 +1,10 @@
 package frc.robot.subsystems;
 
+import org.opencv.calib3d.StereoBM;
+
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -12,9 +15,13 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.studica.frc.AHRS;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
+import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 
 import edu.wpi.first.math.MathUtil;
@@ -23,6 +30,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.SPI;
+import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.SwerveConstants;
@@ -86,8 +94,6 @@ public class SwerveDef implements Loggable {
             steerPID = sPID;
             steerSensor = sensor;
             turnPID = new initPID(steerPID.kP, steerPID.kI, steerPID.kD, 1, 0);
-            neoController = steerMotor.getClosedLoopController();
-            neoEncoder = steerMotor.getEncoder(); 
         }
 
         public void moduleInit() {
@@ -100,10 +106,12 @@ public class SwerveDef implements Loggable {
             DriveMotorGains.kD = 0;
 
             driveTalonConfig.Slot0 = DriveMotorGains;
+
             OpenLoopRampsConfigs openLoopConfig = new OpenLoopRampsConfigs();
             openLoopConfig.TorqueOpenLoopRampPeriod = 0.3;
             openLoopConfig.DutyCycleOpenLoopRampPeriod = 0.3;
             openLoopConfig.VoltageOpenLoopRampPeriod = 0.3;
+
             ClosedLoopRampsConfigs closedLoopConfig = new ClosedLoopRampsConfigs();
             closedLoopConfig.VoltageClosedLoopRampPeriod = 0.3;
             closedLoopConfig.TorqueClosedLoopRampPeriod = 0.3;
@@ -112,23 +120,39 @@ public class SwerveDef implements Loggable {
             driveTalonConfig.ClosedLoopRamps = closedLoopConfig;
             driveTalonConfig.MotorOutput.Inverted = driveMotor.invertType;
             driveTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-            driveMotor.getConfigurator().apply(driveTalonConfig);
+
             CurrentLimitsConfigs currentLimitsConfig = new CurrentLimitsConfigs();
-            currentLimitsConfig.StatorCurrentLimit = 40;
-            currentLimitsConfig.SupplyCurrentLimit = 50;
-            //currentLimitsConfig.SupplyTimeThreshold = 0.5;
+            currentLimitsConfig.StatorCurrentLimit = 30;
+            currentLimitsConfig.SupplyCurrentLimit = 30;
+            driveTalonConfig.CurrentLimits = currentLimitsConfig;
+
+            FeedbackConfigs feedbackConfigs = new FeedbackConfigs();
+            feedbackConfigs.RotorToSensorRatio = 5.36;
+            feedbackConfigs.SensorToMechanismRatio = 2*Math.PI * SwerveConstants.WHEEL_RADIUS_METERS;
+            driveTalonConfig.Feedback = feedbackConfigs;
+
+            driveMotor.getConfigurator().apply(driveTalonConfig);
 
             SparkMaxConfig config = new SparkMaxConfig();
-
             //config.restoreFactoryDefaults();
             config.inverted(steerMotor.inverted);
+            steerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             config.idleMode(IdleMode.kBrake);
+            steerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             // steerMotor.setOpenLoopRampRate(0.2);
             // steerMotor.setClosedLoopRampRate(0.2);
-
-            // neoEncoder.setPositionConversionFactor(SwerveConstants.STEER_MOTOR_COEFFICIENT);
-
-            config.closedLoop.pid(steerPID.kP, steerPID.kI, steerPID.kD);
+            //neoEncoder.setPositionConversionFactor(SwerveConstants.STEER_MOTOR_COEFFICIENT);
+            config.encoder.positionConversionFactor(SwerveConstants.STEER_MOTOR_COEFFICIENT);
+            steerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            config.closedLoop
+                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+                .p(1000)
+                .i(0.0001)
+                .d(0.0001)
+                .outputRange(-1, 1);
+            steerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            neoEncoder = steerMotor.getEncoder(); 
+            neoController = steerMotor.getClosedLoopController();
             // neoController.setFF(steerPID.kF);
             // neoController.setIZone(300);
             // neoController.setOutputRange(-1, 1);
@@ -136,10 +160,14 @@ public class SwerveDef implements Loggable {
             zeroEncoder();
         }
 
-        public void setToCoast() {
-            driveMotor.getConfigurator().refresh(driveTalonConfig);
-            driveTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-            driveMotor.getConfigurator().apply(driveTalonConfig);
+        public void setToCoast() { //TODO coast drive motors
+            //driveMotor.getConfigurator().refresh(driveTalonConfig);
+            //driveTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+            //driveMotor.getConfigurator().apply(driveTalonConfig);
+
+            SparkMaxConfig coast = new SparkMaxConfig();
+            coast.idleMode(IdleMode.kCoast);
+            steerMotor.configure(coast, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
 
             // steerMotor.setIdleMode(SparkMax.IdleMode.kCoast);
         }
@@ -163,6 +191,11 @@ public class SwerveDef implements Loggable {
             position.angle = new Rotation2d(Math.toRadians(angle));
             return position;
         }
+
+        public SwerveModuleState getModuleState() {
+            return new SwerveModuleState(driveMotor.getVelocity().getValueAsDouble(), new Rotation2d(neoEncoder.getPosition()));
+        }
+
         /**
          * @param stateToOptimize
          * @param moduleAngle
@@ -179,7 +212,8 @@ public class SwerveDef implements Loggable {
         }
 
         public void setAngle(double angleToSet) {
-            double encoderPosition = neoEncoder.getPosition(); //degrees, can be over 360
+            double encoderPosition = steerMotor.getEncoder().getPosition()*SwerveConstants.STEER_MOTOR_COEFFICIENT; //degrees, can be over 360
+            System.out.println(encoderPosition);
             double toFullCircle = Math.IEEEremainder(encoderPosition, 360);
             double newAngle = angleToSet + encoderPosition - toFullCircle;
             
@@ -188,8 +222,7 @@ public class SwerveDef implements Loggable {
             } else if (newAngle - encoderPosition < -180) {
                 newAngle += 360;
             }
-            
-            neoController.setReference(newAngle, SparkMax.ControlType.kPosition); // runs PID with adjusted angle over 360 degs
+            neoController.setReference(newAngle / SwerveConstants.STEER_MOTOR_COEFFICIENT, SparkMax.ControlType.kPosition); // runs PID with adjusted angle over 360 degs
         }
 
         public void setState(SwerveModuleState stateToSet) {

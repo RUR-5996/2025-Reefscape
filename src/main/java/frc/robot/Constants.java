@@ -27,7 +27,7 @@ public final class Constants {
     public static final double STEER_MOTOR_GEARING = 21.43;
     public static final double STEER_MOTOR_COEFFICIENT = 1.0 / STEER_MOTOR_GEARING * 360.0;
     public static final double WHEEL_RADIUS_METERS = 0.10/2;
-    public static final double FALCON_RPM = 6379.0*1.15;
+    public static final double FALCON_RPM = 6379.0;
     public static final double DRIVE_FACTOR = FALCON_RPM / (60.0 * DRIVE_MOTOR_GEARING) * 2 * Math.PI * WHEEL_RADIUS_METERS; //mps
 
     public static final double WHEEL_BASE_WIDTH = 0.517;
@@ -94,7 +94,7 @@ public final class Constants {
     //public static final double MAX_VELOCITY = 4.9; //TODO determine
     //public static final double MAX_ROT_ACCELERATION = 0.5; //TODO determine
    // public static final double MAX_ROT_VELOCITY = 2*Math.PI*Math.hypot(SwerveConstants.WHEEL_BASE_WIDTH, SwerveConstants.TRACK_WIDTH)*SwerveConstants.MAX_SPEED_METERSperSECOND; //TODO determine
-    public static final PPHolonomicDriveController autoConfig = new PPHolonomicDriveController(new PIDConstants(5, 0, 0), new PIDConstants(5, 0, 0));
+    public static final PPHolonomicDriveController autoConfig = new PPHolonomicDriveController(new PIDConstants(0.5, 0, 0), new PIDConstants(1.0, 0, 0));
   }
 
   public static class ColourConstants {
