@@ -1,6 +1,6 @@
 package frc.robot.subsystems;
 
-import frc.robot.subsystems.LimelightHelpers;
+import frc.robot.util.LimelightHelpers;
 
 public class LimeLight {
 

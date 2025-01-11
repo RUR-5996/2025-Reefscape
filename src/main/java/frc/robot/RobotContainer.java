@@ -1,65 +1,55 @@
-// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot;
 
-import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.PowerDistribution.ModuleType;
-import edu.wpi.first.wpilibj.shuffleboard.BuiltInWidgets;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.AutoConstants;
+import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.LimeLight;
 import frc.robot.subsystems.SwerveDrive;
 
 import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.path.PathPlannerPath;
 
 public class RobotContainer {
 
   private final CommandXboxController xBox = new CommandXboxController(0);
   private final SendableChooser<Command> autoChooser;
 
-  private PowerDistribution pdp;
   public SwerveDrive SWERVE;
-  private LEDs LEDController;
+  public DriveTrain DRIVETRAIN;
+  private LEDs LEDS;
   RobotConfig config;
   
   public RobotContainer() {
-    SWERVE = new SwerveDrive();
-    pdp = new PowerDistribution(0, ModuleType.kCTRE);
-    LEDController = new LEDs();
+    SWERVE = SwerveDrive.getInstance();
+    DRIVETRAIN = DriveTrain.getInstance();
+    LEDS = new LEDs();
 
-    loadPaths();
-
-    Shuffleboard.getTab("pdp").add("PDP", pdp).withWidget(BuiltInWidgets.kPowerDistribution);
     SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
+
     configureBindings();
 
+    loadPaths();
     autoChooser = AutoBuilder.buildAutoChooser();
     SmartDashboard.putData("Autonomous", autoChooser);
   }
 
   private void configureBindings() {
     xBox.b().toggleOnTrue(SWERVE.toggleSlowMode());
+
     xBox.leftBumper().onTrue(Commands.runOnce(() -> {
       double[] relativePosition = LimeLight.getRelativePos();
       SmartDashboard.putNumber("Position tx", relativePosition[0]);
       SmartDashboard.putNumber("Position ty", relativePosition[1]);
       SmartDashboard.putNumber("Position ta", relativePosition[2]);
       SmartDashboard.putNumber("AprilTagID", relativePosition[3]);
-      LEDController.setColour(((int)relativePosition[3] % 2 == 0) ? Constants.ColourConstants.FLASHBANG : Constants.ColourConstants.PINK);
+      LEDS.setColour(((int)relativePosition[3] % 2 == 0) ? Constants.ColourConstants.FLASHBANG : Constants.ColourConstants.PINK);
     }));
+
   }
 
   private void loadPaths() {

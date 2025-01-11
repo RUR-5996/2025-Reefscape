@@ -1,62 +1,56 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.subsystems.SwerveDef.DriveMotor;
-import frc.robot.subsystems.SwerveDef.SteerMotor;
-import frc.robot.subsystems.SwerveDef.SteerSensor;
 import frc.robot.subsystems.SwerveDef.SwerveModule;
+
 
 public class DriveTrain {
 
-    private static DriveTrain instance;
+    private static DriveTrain DRIVETRAIN;
     
-    SteerMotor flSteer;
-    DriveMotor flDrive;
-    SteerSensor flSensor;
-    SwerveModule flModule;
+    SparkMax flSteer;
+    TalonFX flDrive;
+    public SwerveModule flModule;
 
-    SteerMotor frSteer;
-    DriveMotor frDrive;
-    SteerSensor frSensor;
-    SwerveModule frModule;
+    SparkMax frSteer;
+    TalonFX frDrive;
+    public SwerveModule frModule;
 
-    SteerMotor rlSteer;
-    DriveMotor rlDrive;
-    SteerSensor rlSensor;
-    SwerveModule rlModule;
+    SparkMax rlSteer;
+    TalonFX rlDrive;
+    public SwerveModule rlModule;
 
-    SteerMotor rrSteer;
-    DriveMotor rrDrive;
-    SteerSensor rrSensor;
-    SwerveModule rrModule;
+    SparkMax rrSteer;
+    TalonFX rrDrive;
+    public SwerveModule rrModule;
 
     public SwerveDriveKinematics swerveKinematics;
 
 
     public DriveTrain() {
-        flSteer = new SteerMotor(1, SwerveConstants.FL_STEER_INVERT_TYPE);
-        flDrive = new DriveMotor(1, SwerveConstants.FL_DRIVE_INVERT_TYPE);
-        flSensor = new SteerSensor(1, SwerveConstants.FL_STEER_OFFSET);
-        flModule = new SwerveModule(flSteer, SwerveConstants.FL_STEER_PID_VALUES, flDrive, SwerveConstants.FL_DRIVE_PID_VALUES, flSensor);
+        flSteer = new SparkMax(1, MotorType.kBrushless);
+        flDrive = new TalonFX(1);
+        flModule = new SwerveModule(flSteer, SwerveConstants.FL_STEER_INVERT_TYPE, flDrive, SwerveConstants.FL_DRIVE_INVERT_TYPE);
 
-        frSteer = new SteerMotor(2, SwerveConstants.FR_STEER_INVERT_TYPE);
-        frDrive = new DriveMotor(2, SwerveConstants.FR_DRIVE_INVERT_TYPE);
-        frSensor = new SteerSensor(3, SwerveConstants.FR_STEER_OFFSET);
-        frModule = new SwerveModule(frSteer, SwerveConstants.FR_STEER_PID_VALUES, frDrive, SwerveConstants.FR_DRIVE_PID_VALUES, frSensor);
+        frSteer = new SparkMax(2, MotorType.kBrushless);
+        frDrive = new TalonFX(2);
+        frModule = new SwerveModule(frSteer, SwerveConstants.FR_STEER_INVERT_TYPE, frDrive, SwerveConstants.FR_DRIVE_INVERT_TYPE);
 
-        rlSteer = new SteerMotor(3, SwerveConstants.RL_STEER_INVERT_TYPE);
-        rlDrive = new DriveMotor(3, SwerveConstants.RL_DRIVE_INVERT_TYPE);
-        rlSensor = new SteerSensor(4, SwerveConstants.RL_STEER_OFFSET);
-        rlModule = new SwerveModule(rlSteer, SwerveConstants.RL_STEER_PID_VALUES, rlDrive, SwerveConstants.RL_DRIVE_PID_VALUES, rlSensor);
+        rlSteer = new SparkMax(3, MotorType.kBrushless);
+        rlDrive = new TalonFX(3);
+        rlModule = new SwerveModule(rlSteer, SwerveConstants.RL_STEER_INVERT_TYPE, rlDrive, SwerveConstants.RL_DRIVE_INVERT_TYPE);
 
-        rrSteer = new SteerMotor(4, SwerveConstants.RR_STEER_INVERT_TYPE);
-        rrDrive = new DriveMotor(4, SwerveConstants.RR_DRIVE_INVERT_TYPE);
-        rrSensor = new SteerSensor(2, SwerveConstants.RR_STEER_OFFSET);
-        rrModule = new SwerveModule(rrSteer, SwerveConstants.RR_STEER_PID_VALUES, rrDrive, SwerveConstants.RR_DRIVE_PID_VALUES, rrSensor);
+        rrSteer = new SparkMax(4, MotorType.kBrushless);
+        rrDrive = new TalonFX(4);
+        rrModule = new SwerveModule(rrSteer, SwerveConstants.RR_STEER_INVERT_TYPE, rrDrive, SwerveConstants.RR_DRIVE_INVERT_TYPE);
 
         flModule.moduleInit();
         frModule.moduleInit();
@@ -65,14 +59,15 @@ public class DriveTrain {
 
         swerveKinematics = new SwerveDriveKinematics(SwerveConstants.FL_LOC, SwerveConstants.FR_LOC, SwerveConstants.RL_LOC, SwerveConstants.RR_LOC);
 
-        setToCoast();
+        setSteerToCoast();
+        setDriveToCoast();
     }
 
     public static DriveTrain getInstance() {
-        if(instance == null) {
-            instance = new DriveTrain();
+        if(DRIVETRAIN == null) {
+            DRIVETRAIN = new DriveTrain();
         }
-        return instance;
+        return DRIVETRAIN;
     }
 
     public void setModuleSpeeds(SwerveModuleState[] _swerveModuleSates) {
@@ -82,26 +77,41 @@ public class DriveTrain {
         rrModule.setState(_swerveModuleSates[3]);
     }
 
-    public void setToCoast() {
-        flModule.setToCoast();
-        frModule.setToCoast();
-        rlModule.setToCoast();
-        rrModule.setToCoast();
+    public void setSteerToCoast() {
+        flModule.setSteerToCoast();
+        frModule.setSteerToCoast();
+        rlModule.setSteerToCoast();
+        rrModule.setSteerToCoast();
     }
 
-    public void setToBrake() {
-        flModule.setToBrake();
-        frModule.setToBrake();
-        rlModule.setToBrake();
-        rrModule.setToBrake();
+    public void setDriveToCoast() {
+        flModule.setDriveToCoast();
+        frModule.setDriveToCoast();
+        rlModule.setDriveToCoast();
+        rrModule.setDriveToCoast();
+    }
+
+    public void setSteerToBrake() {
+        flModule.setSteerToBrake();
+        frModule.setSteerToBrake();
+        rlModule.setSteerToBrake();
+        rrModule.setSteerToBrake();
+    }
+
+    
+    public void setDriveToBrake() {
+        flModule.setDriveToBrake();
+        frModule.setDriveToBrake();
+        rlModule.setDriveToBrake();
+        rrModule.setDriveToBrake();
     }
 
     public SwerveModulePosition[] getModulePositions() {
         return new SwerveModulePosition[] {
-            flModule.getState(),
-            frModule.getState(),
-            rlModule.getState(),
-            rrModule.getState()
+            flModule.getModulePosition(),
+            frModule.getModulePosition(),
+            rlModule.getModulePosition(),
+            rrModule.getModulePosition()
         };
     }
 

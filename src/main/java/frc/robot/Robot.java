@@ -8,29 +8,31 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.DriveTrain;
-import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.Logger;
+import frc.robot.util.Report;
 
-public class Robot extends TimedRobot implements Loggable{
+public class Robot extends TimedRobot{
   private Command m_autonomousCommand;
 
-  private RobotContainer m_robotContainer;
+  RobotContainer m_robotContainer;
+  Report REPORT;
+  DriveTrain DRIVETRAIN;
 
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
-    Logger.configureLoggingAndConfig(this, false);
+    REPORT = Report.getInstance();
+    DRIVETRAIN = DriveTrain.getInstance();
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    Logger.updateEntries();
+    REPORT.periodic();
   }
 
   @Override
   public void disabledInit() {
-    m_robotContainer.SWERVE.DRIVETRAIN.setToCoast();
+    DRIVETRAIN.setSteerToCoast();
 
   }
 
@@ -67,7 +69,12 @@ public class Robot extends TimedRobot implements Loggable{
   }
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    DRIVETRAIN.flModule.testModule();
+    DRIVETRAIN.frModule.testModule();
+    DRIVETRAIN.rlModule.testModule();
+    DRIVETRAIN.rrModule.testModule();
+  }
 
   @Override
   public void simulationInit() {}

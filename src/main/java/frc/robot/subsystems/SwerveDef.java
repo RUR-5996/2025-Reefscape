@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import org.opencv.calib3d.StereoBM;
-
 import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
@@ -12,16 +10,15 @@ import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.studica.frc.AHRS;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
-import com.revrobotics.spark.config.MAXMotionConfig.MAXMotionPositionMode;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
 
 import edu.wpi.first.math.MathUtil;
@@ -29,71 +26,32 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.wpilibj.SPI;
-import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
-import edu.wpi.first.wpilibj.AnalogInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.SwerveConstants;
 
-import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.annotations.Log;
+public class SwerveDef {
 
-public class SwerveDef implements Loggable {
-
-    public static class SteerMotor extends SparkMax {
-        public boolean inverted;
-
-        public SteerMotor(int id, boolean inverted) {
-            super(id, SparkMax.MotorType.kBrushless);
-            this.inverted = inverted;
-        }
-    }
-
-    public static class DriveMotor extends TalonFX {
-        public InvertedValue invertType;
-
-        public DriveMotor(int id, InvertedValue invertType) {
-            super(id, "5996");
-            this.invertType = invertType; 
-        }
-    }
-
-    // Use this structure when using off-motor encoder. Implement in SwerveModule
-    // class!
-    public static class SteerSensor extends AnalogInput {
-        public double offset;
-        public AnalogInput sensor;
-
-        public SteerSensor(int id, double offset) {
-            super(id);
-            this.offset = offset;
-        }
-    }
-
-    // should create a lib for this
     public static class SwerveModule {
-        public RelativeEncoder neoEncoder;
-        public SparkAbsoluteEncoder neoAbsEncoder;
-        public SparkClosedLoopController neoController;
-        public SteerMotor steerMotor;
-        public DriveMotor driveMotor;
-        public SteerSensor steerSensor;
-        public pidValues drivePID, steerPID;
-        public initPID turnPID;
+        public RelativeEncoder steerEncoder;
+        public SparkClosedLoopController steerController;
+        public SparkMax steerMotor;
+        public TalonFX driveMotor;
         private TalonFXConfiguration driveTalonConfig = new TalonFXConfiguration();
         private VelocityVoltage m_velocitySetter = new VelocityVoltage(0);
         double rotationsPerWheelRotation = SwerveConstants.DRIVE_MOTOR_GEARING;
         double metersPerWheelRotation = 2*Math.PI*SwerveConstants.WHEEL_RADIUS_METERS;
         double m_driveRotationsPerMeter = rotationsPerWheelRotation/metersPerWheelRotation;
-        SwerveModulePosition position = new SwerveModulePosition();
 
-        public SwerveModule(SteerMotor sMotor, pidValues sPID, DriveMotor dMotor, pidValues dPID, SteerSensor sensor) {
+        boolean steerInverted;
+        InvertedValue driveInverted;
+
+        PIDController backupController;
+
+        public SwerveModule(SparkMax sMotor, boolean sInverted, TalonFX dMotor, InvertedValue dInverted) {
             steerMotor = sMotor;
             driveMotor = dMotor;
-            drivePID = dPID;
-            steerPID = sPID;
-            steerSensor = sensor;
-            turnPID = new initPID(steerPID.kP, steerPID.kI, steerPID.kD, 1, 0);
+            steerInverted = sInverted;
+            driveInverted = dInverted;
         }
 
         public void moduleInit() {
@@ -101,7 +59,7 @@ public class SwerveDef implements Loggable {
             driveMotor.getConfigurator().refresh(driveTalonConfig);
             final Slot0Configs DriveMotorGains = new Slot0Configs();
         
-            DriveMotorGains.kP = SwerveConstants.kP;
+            DriveMotorGains.kP = SwerveConstants.driveKP;
             DriveMotorGains.kI = 0;
             DriveMotorGains.kD = 0;
 
@@ -118,7 +76,7 @@ public class SwerveDef implements Loggable {
             closedLoopConfig.DutyCycleClosedLoopRampPeriod = 0.3;
             driveTalonConfig.OpenLoopRamps = openLoopConfig;
             driveTalonConfig.ClosedLoopRamps = closedLoopConfig;
-            driveTalonConfig.MotorOutput.Inverted = driveMotor.invertType;
+            driveTalonConfig.MotorOutput.Inverted = driveInverted;
             driveTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
             CurrentLimitsConfigs currentLimitsConfig = new CurrentLimitsConfigs();
@@ -134,86 +92,67 @@ public class SwerveDef implements Loggable {
             driveMotor.getConfigurator().apply(driveTalonConfig);
 
             SparkMaxConfig config = new SparkMaxConfig();
-            //config.restoreFactoryDefaults();
-            config.inverted(steerMotor.inverted);
-            steerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-            config.idleMode(IdleMode.kBrake);
-            steerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-            // steerMotor.setOpenLoopRampRate(0.2);
-            // steerMotor.setClosedLoopRampRate(0.2);
-            //neoEncoder.setPositionConversionFactor(SwerveConstants.STEER_MOTOR_COEFFICIENT);
+            config
+                .inverted(steerInverted)
+                .idleMode(IdleMode.kBrake);
             config.encoder.positionConversionFactor(SwerveConstants.STEER_MOTOR_COEFFICIENT);
-            steerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
             config.closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .p(1000)
                 .i(0.0001)
                 .d(0.0001)
-                .outputRange(-1, 1);
+                .outputRange(-1, 1)
+                .positionWrappingEnabled(true)
+                .positionWrappingInputRange(-180, 180);
             steerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-            neoEncoder = steerMotor.getEncoder(); 
-            neoController = steerMotor.getClosedLoopController();
-            // neoController.setFF(steerPID.kF);
-            // neoController.setIZone(300);
-            // neoController.setOutputRange(-1, 1);
-            // neoController.setFeedbackDevice(neoEncoder);
-            zeroEncoder();
+
+            steerEncoder = steerMotor.getEncoder(); 
+            steerController = steerMotor.getClosedLoopController();
+
+            resetSteerEncoder();
+
+            backupController = new PIDController(SwerveConstants.steerKP, SwerveConstants.steerKI, SwerveConstants.steerKD);
+            backupController.setTolerance(1);
         }
 
-        public void setToCoast() { //TODO coast drive motors
-            //driveMotor.getConfigurator().refresh(driveTalonConfig);
-            //driveTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-            //driveMotor.getConfigurator().apply(driveTalonConfig);
+        public void setDriveToCoast() { 
+            driveMotor.getConfigurator().refresh(driveTalonConfig);
+            driveTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+            driveMotor.getConfigurator().apply(driveTalonConfig);
+        }
 
+        public void setSteerToCoast() {
             SparkMaxConfig coast = new SparkMaxConfig();
             coast.idleMode(IdleMode.kCoast);
             steerMotor.configure(coast, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
-
-            // steerMotor.setIdleMode(SparkMax.IdleMode.kCoast);
         }
 
-        public void setToBrake() {
+        public void setDriveToBrake() {
             driveMotor.getConfigurator().refresh(driveTalonConfig);
             driveTalonConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
             driveMotor.getConfigurator().apply(driveTalonConfig);
-
-            // steerMotor.setIdleMode(SparkMax.IdleMode.kBrake);
         }
 
-        public void zeroEncoder() {
-            neoEncoder.setPosition(0);
+        public void setSteerToBrake() {
+            SparkMaxConfig coast = new SparkMaxConfig();
+            coast.idleMode(IdleMode.kBrake);
+            steerMotor.configure(coast, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
         }
 
-        public SwerveModulePosition getState() {
-            double drive_rot = driveMotor.getPosition().getValueAsDouble() + (driveMotor.getVelocity().getValueAsDouble() * driveMotor.getPosition().getTimestamp().getLatency());
-            double angle = neoEncoder.getPosition(); //degrees
-            position.distanceMeters = drive_rot / m_driveRotationsPerMeter;
-            position.angle = new Rotation2d(Math.toRadians(angle));
-            return position;
+        public void resetSteerEncoder() {
+            steerEncoder.setPosition(0);
+        }
+
+        public SwerveModulePosition getModulePosition() {
+            return new SwerveModulePosition(driveMotor.getPosition().getValueAsDouble(), new Rotation2d(Math.toRadians(steerEncoder.getPosition())));
         }
 
         public SwerveModuleState getModuleState() {
-            return new SwerveModuleState(driveMotor.getVelocity().getValueAsDouble(), new Rotation2d(neoEncoder.getPosition()));
-        }
-
-        /**
-         * @param stateToOptimize
-         * @param moduleAngle
-         * @return
-         */
-        public SwerveModuleState optimizeState(SwerveModuleState stateToOptimize, Rotation2d moduleAngle) {
-            Rotation2d diff = stateToOptimize.angle.minus(moduleAngle);
-
-            if (Math.abs(diff.getDegrees()) > 90) {
-                return new SwerveModuleState(-stateToOptimize.speedMetersPerSecond, stateToOptimize.angle.rotateBy(Rotation2d.fromDegrees(180)));
-            } else {
-                return new SwerveModuleState(stateToOptimize.speedMetersPerSecond, stateToOptimize.angle);
-            }
+            return new SwerveModuleState(driveMotor.getVelocity().getValueAsDouble(), new Rotation2d(Math.toRadians(steerEncoder.getPosition())));
         }
 
         public void setAngle(double angleToSet) {
-            double encoderPosition = steerMotor.getEncoder().getPosition()*SwerveConstants.STEER_MOTOR_COEFFICIENT; //degrees, can be over 360
-            System.out.println(encoderPosition);
+            double encoderPosition = steerMotor.getEncoder().getPosition(); //degrees, can be over 360
             double toFullCircle = Math.IEEEremainder(encoderPosition, 360);
             double newAngle = angleToSet + encoderPosition - toFullCircle;
             
@@ -222,80 +161,30 @@ public class SwerveDef implements Loggable {
             } else if (newAngle - encoderPosition < -180) {
                 newAngle += 360;
             }
-            neoController.setReference(newAngle / SwerveConstants.STEER_MOTOR_COEFFICIENT, SparkMax.ControlType.kPosition); // runs PID with adjusted angle over 360 degs
+
+            steerController.setReference(newAngle, SparkMax.ControlType.kPosition, ClosedLoopSlot.kSlot0); // runs PID with adjusted angle over 360 degs
+            steerMotor.set(MathUtil.clamp(backupController.calculate(steerEncoder.getPosition(), newAngle), -1.0, 1.0));
         }
 
         public void setState(SwerveModuleState stateToSet) {
-            SwerveModuleState optimizedState = optimizeState(stateToSet, new Rotation2d(Math.toRadians(neoEncoder.getPosition())));
-            optimizedState.optimize(new Rotation2d(Math.toRadians(neoEncoder.getPosition())));
+            stateToSet.optimize(new Rotation2d(Math.toRadians(steerEncoder.getPosition())));
 
-            setAngle(optimizedState.angle.getDegrees());
+            setAngle(stateToSet.angle.getDegrees());
 
-            SmartDashboard.putNumber("speed", optimizedState.speedMetersPerSecond); //TODO check if this maxes out
-            driveMotor.setControl(m_velocitySetter.withVelocity(optimizedState.speedMetersPerSecond * m_driveRotationsPerMeter));
+            SmartDashboard.putNumber("speed", stateToSet.speedMetersPerSecond); //TODO check if this maxes out
+            driveMotor.setControl(m_velocitySetter.withVelocity(stateToSet.speedMetersPerSecond));
         }
 
-        @Log
-        public double getNeoAngle() {
-            return neoEncoder.getPosition();
+        public double getSteerAngle() {
+            return steerEncoder.getPosition();
         }
 
-        public double clampContinuousDegs(double toClamp) {
-            if (toClamp < -180) {
-                return 180-(toClamp%180.0);
-            } else if (toClamp > 180) {
-                return -180+(toClamp%180);
-            } else {
-                return toClamp;
-            }
+        public double getSpeed() {
+            return driveMotor.getVelocity().getValueAsDouble();
         }
 
-    }
-
-    // compact way to stiore PID controller constants
-    public static class pidValues {
-        public double kP;
-        public double kI;
-        public double kD;
-        public double kF;
-
-        public pidValues(double kP, double kI, double kD) {
-            this.kP = kP;
-            this.kI = kI;
-            this.kD = kD;
-            this.kF = 0;
-        }
-
-        public pidValues(double kP, double kI, double kD, double kF) {
-            this.kP = kP;
-            this.kI = kI;
-            this.kD = kD;
-            this.kF = kF;
-        }
-    }
-
-    public static class initPID extends PIDController {
-        private double target, offset, maxSpeed;
-
-        public initPID(double kP, double kI, double kD, double mSpeed, double setpoint) {
-            super(kP, kI, kD);
-            super.setTolerance(0.72);
-            super.enableContinuousInput(-180, 180);
-            maxSpeed = mSpeed;
-            target = setpoint;
-        }
-
-        public void setTarget(double setpoint) {
-            target = setpoint;
-        }
-
-        public void setOffset(double value) {
-            offset = value;
-        }
-
-        public double pidGet() {
-            double speed = MathUtil.clamp(super.calculate(offset, target), -maxSpeed, maxSpeed);
-            return speed;
+        public void testModule() {
+            steerController.setReference(90, ControlType.kPosition);
         }
 
     }
