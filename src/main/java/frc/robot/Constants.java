@@ -8,12 +8,12 @@ import edu.wpi.first.math.geometry.Translation2d;
 
 public final class Constants {
   public static class SwerveConstants {
-    public static final double driveKP = 0.1;
+    public static final double driveKP = 0.75;
     public static final double driveKI = 0;
     public static final double driveKD = 0;
     public static final double deriveKIzone = 300;
 
-    public static final double steerKP = 0.1;
+    public static final double steerKP = 0.01;
     public static final double steerKI = 0;
     public static final double steerKD = 0;
 
@@ -63,13 +63,14 @@ public final class Constants {
   
   public static class DriverConstants {
     public static final double CONTROLLER_DEBOUNCE_TIME = 0.2;
-    public static final double DRIVE_GOVERNOR = 1;
-    public static final double TURN_GOVERNOR = 1;
+    public static final double DRIVE_GOVERNOR = 0.6;
+    public static final double TURN_GOVERNOR = 0.6;
     public static final double PRECISION_RATIO = 0.2;
   }
   
   public static final class AutoConstants { //TODO move to SwerveConstants
-    public static final PPHolonomicDriveController autoConfig = new PPHolonomicDriveController(new PIDConstants(0.5, 0, 0), new PIDConstants(1.0, 0, 0));
+    public static final PPHolonomicDriveController autoConfig = new PPHolonomicDriveController(new PIDConstants(6.5
+    , 0, 0), new PIDConstants(0.5, 0, 0));
   }
 
   public static class ColourConstants {

@@ -29,6 +29,7 @@ public class Report {
         field = new Field2d();
         SmartDashboard.putData("field", field);
         field.setRobotPose(SWERVE.getOdometryPose());
+        //reportSwerve();
     }
 
     public void periodic() {

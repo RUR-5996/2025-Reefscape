@@ -37,19 +37,19 @@ public class DriveTrain {
 
     public DriveTrain() {
         flSteer = new SparkMax(1, MotorType.kBrushless);
-        flDrive = new TalonFX(1);
+        flDrive = new TalonFX(1, "5996");
         flModule = new SwerveModule(flSteer, SwerveConstants.FL_STEER_INVERT_TYPE, flDrive, SwerveConstants.FL_DRIVE_INVERT_TYPE);
 
         frSteer = new SparkMax(2, MotorType.kBrushless);
-        frDrive = new TalonFX(2);
+        frDrive = new TalonFX(2, "5996");
         frModule = new SwerveModule(frSteer, SwerveConstants.FR_STEER_INVERT_TYPE, frDrive, SwerveConstants.FR_DRIVE_INVERT_TYPE);
 
         rlSteer = new SparkMax(3, MotorType.kBrushless);
-        rlDrive = new TalonFX(3);
+        rlDrive = new TalonFX(3, "5996");
         rlModule = new SwerveModule(rlSteer, SwerveConstants.RL_STEER_INVERT_TYPE, rlDrive, SwerveConstants.RL_DRIVE_INVERT_TYPE);
 
         rrSteer = new SparkMax(4, MotorType.kBrushless);
-        rrDrive = new TalonFX(4);
+        rrDrive = new TalonFX(4,"5996");
         rrModule = new SwerveModule(rrSteer, SwerveConstants.RR_STEER_INVERT_TYPE, rrDrive, SwerveConstants.RR_DRIVE_INVERT_TYPE);
 
         flModule.moduleInit();

@@ -14,6 +14,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -78,6 +79,7 @@ public class SwerveDrive extends SubsystemBase{
         rotationController.setTolerance(2);
 
         chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, new Rotation2d(Math.toRadians(gyro.getAngle())));
+        resetOdometry(new Pose2d(7.3, 4.2, gyro.getRotation2d()));
     }
 
     /**
@@ -87,8 +89,11 @@ public class SwerveDrive extends SubsystemBase{
     public void periodic() {
         m_odometry.update(getHeading(), DRIVETRAIN.getModulePositions());
 
-        robotPose = updateOdometry();
+        //robotPose = updateOdometry();
 
+        SmartDashboard.putNumber("xpos", m_odometry.getEstimatedPosition().getX());
+        SmartDashboard.putNumber("ypos", m_odometry.getEstimatedPosition().getY());
+        SmartDashboard.putNumber("angle", gyro.getAngle());
     }
 
     public static SwerveDrive getInstance() {
@@ -172,7 +177,7 @@ public class SwerveDrive extends SubsystemBase{
     }
     
     public static Rotation2d getHeading() {
-        return new Rotation2d(Math.toRadians(gyro.getAngle()));
+        return gyro.getRotation2d();
     }
 
     public SwerveDriveKinematics getKinematics() {

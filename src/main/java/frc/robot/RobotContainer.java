@@ -27,7 +27,7 @@ public class RobotContainer {
   public RobotContainer() {
     SWERVE = SwerveDrive.getInstance();
     DRIVETRAIN = DriveTrain.getInstance();
-    LEDS = new LEDs();
+    LEDS = LEDs.getInstance();
 
     SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
 

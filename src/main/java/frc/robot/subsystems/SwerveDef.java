@@ -40,7 +40,7 @@ public class SwerveDef {
         private VelocityVoltage m_velocitySetter = new VelocityVoltage(0);
         double rotationsPerWheelRotation = SwerveConstants.DRIVE_MOTOR_GEARING;
         double metersPerWheelRotation = 2*Math.PI*SwerveConstants.WHEEL_RADIUS_METERS;
-        double m_driveRotationsPerMeter = rotationsPerWheelRotation/metersPerWheelRotation;
+        double m_driveRotationsPerMeter = 1/metersPerWheelRotation;
 
         boolean steerInverted;
         InvertedValue driveInverted;
@@ -85,8 +85,8 @@ public class SwerveDef {
             driveTalonConfig.CurrentLimits = currentLimitsConfig;
 
             FeedbackConfigs feedbackConfigs = new FeedbackConfigs();
-            feedbackConfigs.RotorToSensorRatio = 5.36;
-            feedbackConfigs.SensorToMechanismRatio = 2*Math.PI * SwerveConstants.WHEEL_RADIUS_METERS;
+            feedbackConfigs.RotorToSensorRatio = 1;
+            feedbackConfigs.SensorToMechanismRatio = SwerveConstants.DRIVE_MOTOR_GEARING;
             driveTalonConfig.Feedback = feedbackConfigs;
 
             driveMotor.getConfigurator().apply(driveTalonConfig);
@@ -98,13 +98,13 @@ public class SwerveDef {
             config.encoder.positionConversionFactor(SwerveConstants.STEER_MOTOR_COEFFICIENT);
             config.closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .p(1000)
-                .i(0.0001)
-                .d(0.0001)
+                .p(0.02)
+                .i(0)
+                .d(0)
                 .outputRange(-1, 1)
                 .positionWrappingEnabled(true)
                 .positionWrappingInputRange(-180, 180);
-            steerMotor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            steerMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
             steerEncoder = steerMotor.getEncoder(); 
             steerController = steerMotor.getClosedLoopController();
@@ -124,7 +124,7 @@ public class SwerveDef {
         public void setSteerToCoast() {
             SparkMaxConfig coast = new SparkMaxConfig();
             coast.idleMode(IdleMode.kCoast);
-            steerMotor.configure(coast, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            steerMotor.configure(coast, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         }
 
         public void setDriveToBrake() {
@@ -136,7 +136,7 @@ public class SwerveDef {
         public void setSteerToBrake() {
             SparkMaxConfig coast = new SparkMaxConfig();
             coast.idleMode(IdleMode.kBrake);
-            steerMotor.configure(coast, ResetMode.kResetSafeParameters, PersistMode.kPersistParameters);
+            steerMotor.configure(coast, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         }
 
         public void resetSteerEncoder() {
@@ -144,11 +144,11 @@ public class SwerveDef {
         }
 
         public SwerveModulePosition getModulePosition() {
-            return new SwerveModulePosition(driveMotor.getPosition().getValueAsDouble(), new Rotation2d(Math.toRadians(steerEncoder.getPosition())));
+            return new SwerveModulePosition(driveMotor.getPosition().getValueAsDouble()/m_driveRotationsPerMeter, new Rotation2d(Math.toRadians(steerEncoder.getPosition())));
         }
 
         public SwerveModuleState getModuleState() {
-            return new SwerveModuleState(driveMotor.getVelocity().getValueAsDouble(), new Rotation2d(Math.toRadians(steerEncoder.getPosition())));
+            return new SwerveModuleState(driveMotor.getVelocity().getValueAsDouble()/m_driveRotationsPerMeter, new Rotation2d(Math.toRadians(steerEncoder.getPosition())));
         }
 
         public void setAngle(double angleToSet) {
@@ -163,16 +163,33 @@ public class SwerveDef {
             }
 
             steerController.setReference(newAngle, SparkMax.ControlType.kPosition, ClosedLoopSlot.kSlot0); // runs PID with adjusted angle over 360 degs
-            steerMotor.set(MathUtil.clamp(backupController.calculate(steerEncoder.getPosition(), newAngle), -1.0, 1.0));
+            //steerMotor.set(MathUtil.clamp(backupController.calculate(steerMotor.getEncoder().getPosition()*SwerveConstants.STEER_MOTOR_COEFFICIENT, newAngle), -1.0, 1.0));
         }
 
+        /**
+         * @param stateToOptimize
+         * @param moduleAngle
+         * @return
+         */
+        public SwerveModuleState optimizeState(SwerveModuleState stateToOptimize, Rotation2d moduleAngle) {
+            Rotation2d diff = stateToOptimize.angle.minus(moduleAngle);
+
+            if (Math.abs(diff.getDegrees()) > 90) {
+                return new SwerveModuleState(-stateToOptimize.speedMetersPerSecond, stateToOptimize.angle.rotateBy(Rotation2d.fromDegrees(180)));
+            } else {
+                return new SwerveModuleState(stateToOptimize.speedMetersPerSecond, stateToOptimize.angle);
+            }
+        }
+
+
         public void setState(SwerveModuleState stateToSet) {
+            //SwerveModuleState optimizedState = optimizeState(stateToSet, new Rotation2d(Math.toRadians(steerEncoder.getPosition())));
             stateToSet.optimize(new Rotation2d(Math.toRadians(steerEncoder.getPosition())));
 
             setAngle(stateToSet.angle.getDegrees());
 
             SmartDashboard.putNumber("speed", stateToSet.speedMetersPerSecond); //TODO check if this maxes out
-            driveMotor.setControl(m_velocitySetter.withVelocity(stateToSet.speedMetersPerSecond));
+            driveMotor.setControl(m_velocitySetter.withVelocity(stateToSet.speedMetersPerSecond * m_driveRotationsPerMeter));
         }
 
         public double getSteerAngle() {
@@ -180,7 +197,7 @@ public class SwerveDef {
         }
 
         public double getSpeed() {
-            return driveMotor.getVelocity().getValueAsDouble();
+            return driveMotor.getVelocity().getValueAsDouble()/m_driveRotationsPerMeter;
         }
 
         public void testModule() {

@@ -7,7 +7,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.ColourConstants;
 import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.LEDs;
 import frc.robot.util.Report;
 
 public class Robot extends TimedRobot{
@@ -16,12 +18,14 @@ public class Robot extends TimedRobot{
   RobotContainer m_robotContainer;
   Report REPORT;
   DriveTrain DRIVETRAIN;
+  LEDs LEDS;
 
   @Override
   public void robotInit() {
     m_robotContainer = new RobotContainer();
     REPORT = Report.getInstance();
     DRIVETRAIN = DriveTrain.getInstance();
+    LEDS = LEDs.getInstance();
   }
 
   @Override
@@ -33,7 +37,7 @@ public class Robot extends TimedRobot{
   @Override
   public void disabledInit() {
     DRIVETRAIN.setSteerToCoast();
-
+    LEDS.setColour(ColourConstants.DARKBLUE);
   }
 
   @Override
@@ -48,6 +52,7 @@ public class Robot extends TimedRobot{
     } else {
       System.out.println("outonomous command null");
     }
+    LEDS.setColour(ColourConstants.PINK);
   }
 
   @Override
