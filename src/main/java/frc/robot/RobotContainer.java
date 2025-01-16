@@ -9,6 +9,7 @@ import frc.robot.Constants.AutoConstants;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.LEDs;
 import frc.robot.subsystems.LimeLight;
+import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.SwerveDrive;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -23,6 +24,7 @@ public class RobotContainer {
   public DriveTrain DRIVETRAIN;
   private LEDs LEDS;
   RobotConfig config;
+  public Pneumatics PNEUMATICS;
   
   public RobotContainer() {
     SWERVE = SwerveDrive.getInstance();
@@ -48,7 +50,15 @@ public class RobotContainer {
       SmartDashboard.putNumber("Position ta", relativePosition[2]);
       SmartDashboard.putNumber("AprilTagID", relativePosition[3]);
       LEDS.setColour(((int)relativePosition[3] % 2 == 0) ? Constants.ColourConstants.FLASHBANG : Constants.ColourConstants.PINK);
+
+    xBox.a().onTrue(PNEUMATICS.leftIntake());
+    xBox.x().onTrue(PNEUMATICS.rightIntake());
+    xBox.y().onTrue(PNEUMATICS.Elevator1());
+    xBox.rightBumper().onTrue(PNEUMATICS.Elevator2());
+    xBox.leftBumper().onTrue(PNEUMATICS.Elevator3());
+    xBox.x().onTrue(PNEUMATICS.toggleClimber());
     }));
+
 
   }
 
