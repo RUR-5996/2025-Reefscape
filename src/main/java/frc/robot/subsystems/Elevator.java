@@ -77,22 +77,29 @@ public class Elevator extends SubsystemBase {
         liftEncoder = liftMotor.getEncoder(); 
         liftController = liftMotor.getClosedLoopController();
         }
+
     public ElevatorState elevate(ElevatorState floor) {
         if (state == floor) { //if already on correct floor, return
             return floor;
         }
-        //TODO elevator
+        double rotations = getMotorRotations((floorToMm(floor)-floorToMm(state)));
+        liftController.setReference(rotations, SparkMax.ControlType.kPosition); //might not work
+        state = floor;
+        
+        SmartDashboard.putString("floor", state.toString()); //reports state
+
         return state;
     }
 
     public String getElevatorState() {
         return state.toString();
     }
+
     public void setHeight() {
-        liftController.setReference(getElevatorPosition(500), ControlType.kPosition);
+        liftController.setReference(getMotorRotations(500), ControlType.kPosition);
     }
 
-    private enum ElevatorState {
+    public enum ElevatorState {
         DOWN,
         FLOOR0,
         FLOOR1,
@@ -100,7 +107,19 @@ public class Elevator extends SubsystemBase {
         FLOOR3,
     }
 
-    public double getElevatorPosition(double height_requested_mm) { //enter double of elevator extension in mm, returns number of windings of the motor required to achieve that
+    private double floorToMm (ElevatorState floor) {//maybe add conversion to DOWN state
+        if (floor == ElevatorState.FLOOR0) {
+            return frc.robot.Constants.ElevatorConstants.FLOOR0;
+        } if (floor == ElevatorState.FLOOR1) {
+            return frc.robot.Constants.ElevatorConstants.FLOOR1;
+        } if (floor == ElevatorState.FLOOR2) {
+            return frc.robot.Constants.ElevatorConstants.FLOOR2;
+        } if (floor == ElevatorState.FLOOR3) {
+            return frc.robot.Constants.ElevatorConstants.FLOOR3;
+        } return 0; //invalid floor inputed
+    }
+
+    private double getMotorRotations(double height_requested_mm) { //enter double of elevator extension in mm, returns number of windings of the motor required to achieve that
         double thickness_in_mm_t = 2.5;
         double max_height = 1600;
         double requested_height_fraction = height_requested_mm/max_height;
@@ -117,6 +136,6 @@ public class Elevator extends SubsystemBase {
         }
 
 
-        return requested_motor_rotation * 5; //*5 kvuli prevodovce */
+        return requested_motor_rotation * 5; //5 kvuli prevodovce
     }
 }
