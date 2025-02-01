@@ -8,6 +8,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -50,53 +51,77 @@ import frc.robot.Constants.SwerveConstants;
 
 public class Elevator extends SubsystemBase {
 
+    private static Elevator ELEVATOR;
+
     ElevatorState state = ElevatorState.DOWN;
 
-    public RelativeEncoder liftEncoder;
-    public SparkMax liftMotor;
+    public RelativeEncoder leftEncoder;
+    public RelativeEncoder rightEncoder;
+    public SparkMax leftMotor;
+    public SparkMax rightMotor;
 
     PIDController backupController;
 
-    SparkClosedLoopController liftController;
+    SparkClosedLoopController leftController;
+    SparkClosedLoopController rightController;
 
-    public void init() {            
+    public Elevator() {            
+        leftMotor = new SparkMax(5, MotorType.kBrushless);
+        rightMotor = new SparkMax(6, MotorType.kBrushless);
 
         SparkMaxConfig config = new SparkMaxConfig();
         config
             .idleMode(IdleMode.kBrake);
         config.closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .p(0.02)
+            .p(1.5)
             .i(0)
             .d(0)
-            .outputRange(-1, 1)
+            .outputRange(-0.3, 0.3)
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(-180, 180);
-        liftMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        config.inverted(false);
+        leftMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        config.inverted(true);
+        rightMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-        liftEncoder = liftMotor.getEncoder(); 
-        liftController = liftMotor.getClosedLoopController();
-        }
+        leftEncoder = leftMotor.getEncoder(); 
+        //leftEncoder.setPosition(0);
+        leftController = leftMotor.getClosedLoopController();
 
-    public ElevatorState elevate(ElevatorState floor) {
-        if (state == floor) { //if already on correct floor, return
-            return floor;
-        }
-        double rotations = getMotorRotations((floorToMm(floor)-floorToMm(state)));
-        liftController.setReference(rotations, SparkMax.ControlType.kPosition); //might not work
-        state = floor;
-        
-        SmartDashboard.putString("floor", state.toString()); //reports state
-
-        return state;
+        rightEncoder = rightMotor.getEncoder(); 
+        //rightEncoder.setPosition(0);
+        rightController = rightMotor.getClosedLoopController();
     }
+
+    public static Elevator getInstance() {
+        if(ELEVATOR == null) {
+            ELEVATOR = new Elevator();
+        }
+
+        return ELEVATOR;
+    }
+
+    public Command elevate(ElevatorState floor) {
+        return Commands.runOnce(() -> {
+            //double rotations = getMotorRotations((floorToMm(floor)-frc.robot.Constants.ElevatorConstants.DOWN));
+            double rotations = getStateRotations(floor);
+            leftController.setReference(rotations, SparkMax.ControlType.kPosition);
+            rightController.setReference(rotations, SparkMax.ControlType.kPosition);
+            state = floor;
+            SmartDashboard.putString("floor", state.toString()); //reports state
+            SmartDashboard.putNumber("rotations", rotations);
+        });
+    }
+
+
 
     public String getElevatorState() {
         return state.toString();
     }
 
     public void setHeight() {
-        liftController.setReference(getMotorRotations(500), ControlType.kPosition);
+        leftController.setReference(getMotorRotations(500), ControlType.kPosition);
     }
 
     public enum ElevatorState {
@@ -107,8 +132,10 @@ public class Elevator extends SubsystemBase {
         FLOOR3,
     }
 
-    private double floorToMm (ElevatorState floor) {//maybe add conversion to DOWN state
-        if (floor == ElevatorState.FLOOR0) {
+    private double floorToMm (ElevatorState floor) {//TODO add conversion to DOWN state
+        if (floor == ElevatorState.DOWN) {
+            return frc.robot.Constants.ElevatorConstants.DOWN;
+        } if (floor == ElevatorState.FLOOR0) {
             return frc.robot.Constants.ElevatorConstants.FLOOR0;
         } if (floor == ElevatorState.FLOOR1) {
             return frc.robot.Constants.ElevatorConstants.FLOOR1;
@@ -137,5 +164,20 @@ public class Elevator extends SubsystemBase {
 
 
         return requested_motor_rotation * 5; //5 kvuli prevodovce
+    }
+
+    double getStateRotations(ElevatorState state) {
+        switch (state) {
+            case DOWN:
+                return -15;
+            case FLOOR1:
+                return 10.0;
+            case FLOOR2:
+                return 40;
+            case FLOOR3:
+                return 54;
+            default:
+                return 0.0;
+        }
     }
 }

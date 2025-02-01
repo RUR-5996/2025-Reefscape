@@ -5,63 +5,51 @@
     "data": {
       "commands": [
         {
-          "type": "named",
+          "type": "path",
           "data": {
-            "name": null
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": null
+            "pathName": "d0_dr"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "4piece_1"
+            "pathName": "dr_di"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "4piece_2"
+            "pathName": "di_dl"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3piecetop_red_1"
+            "pathName": "dl_di"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3piecetop_red_2"
+            "pathName": "di_dl"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3piecetop_red_3"
+            "pathName": "dl_di"
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "3piecetop_red_4"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": null
+            "pathName": "di_cl"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "old",
+  "folder": null,
   "choreoAuto": false
 }

@@ -13,7 +13,7 @@ import frc.robot.subsystems.LEDs;
 import frc.robot.util.Report;
 
 public class Robot extends TimedRobot{
-  private Command m_autonomousCommand;
+  public static Command m_autonomousCommand;
 
   RobotContainer m_robotContainer;
   Report REPORT;
@@ -32,6 +32,7 @@ public class Robot extends TimedRobot{
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
     REPORT.periodic();
+    m_robotContainer.periodic();
   }
 
   @Override
@@ -56,7 +57,9 @@ public class Robot extends TimedRobot{
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    //RobotContainer.check_for_auto_change_periodic();
+  }
 
   @Override
   public void teleopInit() {

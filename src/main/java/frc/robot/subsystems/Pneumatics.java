@@ -52,7 +52,7 @@ public class Pneumatics extends SubsystemBase implements Loggable {
         elevator_solenoid_1.set(!elevator_solenoid_1.get());
     }
 
-    public Command leftElevator1() {
+    public Command Elevator1() {
         return Commands.runOnce(
             () -> {
                 toggle_elevator_1();
@@ -65,7 +65,7 @@ public class Pneumatics extends SubsystemBase implements Loggable {
     }
 
 
-    public Command leftElevator2() {
+    public Command Elevator2() {
         return Commands.runOnce(
             () -> {
                 toggle_elevator_2();
@@ -78,7 +78,7 @@ public class Pneumatics extends SubsystemBase implements Loggable {
     }
 
 
-    public Command leftElevator3() {
+    public Command Elevator3() {
         return Commands.runOnce(
             () -> {
                 toggle_elevator_3();

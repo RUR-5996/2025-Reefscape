@@ -12,7 +12,7 @@
         "y": 3.6561593313153575
       },
       "isLocked": false,
-      "linkedName": "source_red_shoot"
+      "linkedName": null
     },
     {
       "anchor": {
@@ -33,7 +33,7 @@
   "pointTowardsZones": [],
   "eventMarkers": [
     {
-      "name": "New Event Marker",
+      "name": "",
       "waypointRelativePos": 0,
       "endWaypointRelativePos": null,
       "command": {
@@ -43,7 +43,7 @@
             {
               "type": "named",
               "data": {
-                "name": "set_intake"
+                "name": null
               }
             }
           ]
@@ -51,7 +51,7 @@
       }
     },
     {
-      "name": "New Event Marker",
+      "name": "",
       "waypointRelativePos": 0.85,
       "endWaypointRelativePos": null,
       "command": {
@@ -61,7 +61,7 @@
             {
               "type": "named",
               "data": {
-                "name": "g_intake"
+                "name": null
               }
             }
           ]
@@ -71,7 +71,7 @@
   ],
   "globalConstraints": {
     "maxVelocity": 6.0,
-    "maxAcceleration": 2.5,
+    "maxAcceleration": 3.5,
     "maxAngularVelocity": 540.0,
     "maxAngularAcceleration": 720.0,
     "nominalVoltage": 12.0,
