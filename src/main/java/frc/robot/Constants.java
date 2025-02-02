@@ -5,6 +5,7 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.util.protobuf.ProtobufSerializable;
 
 public final class Constants {
   public static class SwerveConstants {
@@ -84,11 +85,17 @@ public final class Constants {
     public static double BLUEPINK = .5;
   }
 
-  public static class ElevatorConstants {
+  public static class ElevatorConstants { //all measurements in mm
     public static double DOWN = 250.0;
     public static double FLOOR0 = 457.2;
     public static double FLOOR1 = 809.6;
     public static double FLOOR2 = 1209.7;
     public static double FLOOR3 = 1828.8;
+  }
+
+  public static class VisionConstants { //all measurements in m
+    public static double reefAprilTagHeight = .308102;
+    public static double cameraHeight = 0; //TODO measure
+    public static double cameraPitch = 0; //in radians
   }
 }
