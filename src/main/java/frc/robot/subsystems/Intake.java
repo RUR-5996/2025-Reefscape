@@ -9,6 +9,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -22,12 +23,13 @@ public class Intake extends SubsystemBase {
     RelativeEncoder intakeEncoder;
     SparkClosedLoopController intakeController;
 
-    Solenoid frontSolenoid;
-    Solenoid backSolenoid;
+    Solenoid intakeSolenoid;
+    PneumaticsControlModule intakeModule;
 
     IntakeState intakeState = IntakeState.EMPTY;
     SolenoidState solenoidState = SolenoidState.FALSE; //might be needed to be set to true
 
+    public Intake() {}; //for testing
 
     public Intake(int motorId, int frontPiston, int backPiston) {
         intakeMotor = new SparkMax(motorId, MotorType.kBrushless);
@@ -47,30 +49,28 @@ public class Intake extends SubsystemBase {
         intakeController = intakeMotor.getClosedLoopController();
         intakeEncoder.setPosition(0);
 
-        Solenoid frontSolenoid = new Solenoid(0, PneumaticsModuleType.CTREPCM, frontPiston);
-        Solenoid backSolenoid = new Solenoid(0, PneumaticsModuleType.CTREPCM, backPiston);
-        frontSolenoid.set(false); //might be needed to be set to true
-        backSolenoid.set(false);
+        intakeModule = new PneumaticsControlModule(0);
+
+        intakeSolenoid = new Solenoid(0, PneumaticsModuleType.CTREPCM, frontPiston);
+        intakeSolenoid.set(false); //might be needed to be set to true
     }
 
     public Command toggleSolenoid() {
         return Commands.runOnce(() -> {
             if (solenoidState == SolenoidState.FALSE) {
-                frontSolenoid.set(true);
-                backSolenoid.set(true);
+                intakeSolenoid.set(true);
+                solenoidState = SolenoidState.TRUE;
             } else {
-                frontSolenoid.set(false);
-                backSolenoid.set(false);
+                intakeSolenoid.set(false);
+                solenoidState = SolenoidState.FALSE;
             }
         });
     }
 
     public Command intake() {
-        return Commands.run(() -> {}); //TODO
-    }
-
-    public Command toggleIntake() {
-        return Commands.runOnce(() -> {}); //TODO
+        return Commands.run(() -> {
+            intakeMotor.set(.5);
+        }); //TODO
     }
 
     public String getIntakeState() {
