@@ -7,13 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "set_speaker"
+            "name": null
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": null
           }
         },
         {

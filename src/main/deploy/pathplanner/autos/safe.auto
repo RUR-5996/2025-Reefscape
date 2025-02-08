@@ -5,21 +5,15 @@
     "data": {
       "commands": [
         {
-          "type": "path",
+          "type": "path",+
           "data": {
-            "pathName": "safe_1"
-          }
-        },
-        {
-          "type": "named",
-          "data": {
-            "name": "g_intake"
+            "pathName": "Example Path"
           }
         }
       ]
     }
   },
   "resetOdom": true,
-  "folder": "old",
+  "folder": null,
   "choreoAuto": false
 }

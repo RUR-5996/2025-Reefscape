@@ -1,7 +1,5 @@
 package frc.robot.subsystems;
 
-import frc.robot.subsystems.LimelightHelpers;
-
 public class LimeLight {
 
     public static double[] getRelativePos() {

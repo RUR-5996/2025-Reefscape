@@ -9,6 +9,8 @@ import frc.robot.Constants;
 public class LEDs extends SubsystemBase {
     Spark blinkin = new Spark(0);
     private double colour = Constants.ColourConstants.PINK;
+
+    private static LEDs LEDS;
     
     public LEDs() {
 
@@ -16,7 +18,14 @@ public class LEDs extends SubsystemBase {
 
     @Override
     public void periodic() {
-        // blinkin.set(colour);
+        blinkin.set(colour);
+    }
+
+    public static LEDs getInstance() {
+        if(LEDS == null) {
+            LEDS = new LEDs();
+        }
+        return LEDS;
     }
 
     public Command setColour(double constant) {
