@@ -17,6 +17,7 @@ public class Robot extends TimedRobot implements Loggable{
 
   @Override
   public void robotInit() {
+    ScoringTracker scoringTracker = new ScoringTracker();
     m_robotContainer = new RobotContainer();
     Logger.configureLoggingAndConfig(this, false);
   }
