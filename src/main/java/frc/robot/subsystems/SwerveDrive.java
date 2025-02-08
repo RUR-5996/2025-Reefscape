@@ -5,7 +5,6 @@ import java.util.function.DoubleSupplier;
 import com.studica.frc.AHRS;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -14,27 +13,18 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.DriverConstants;
 import frc.robot.Constants.SwerveConstants;
-import frc.robot.subsystems.DriveTrain;
-import frc.robot.subsystems.SwerveDef;
-import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.annotations.Log;
 
-//@SuppressWarnings("removal")
-public class SwerveDrive extends SubsystemBase implements Loggable{
+public class SwerveDrive extends SubsystemBase{
 
-    //control variables
-    DriveTrain DRIVETRAIN;
-
-    PIDController tagController;
-    PIDController noteController;
+    public DriveTrain DRIVETRAIN;
+    private static SwerveDrive SWERVE;
 
     double xSpeed = 0;
     double ySpeed = 0;
@@ -43,10 +33,6 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     double defaultHoldAngle = 0;
     double defaultAngle = 0;
     double rotationControllerOutput;
-    double deltaTime = 0;
-    double prevTime = 0;
-    double tagControllerOutput;
-    double noteControllerOutput;
 
     boolean fieldRelative = true; 
     boolean assistedDrive = false;
@@ -58,36 +44,30 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     boolean noteControllerEnabled = false;
 
     Pose2d robotPose = new Pose2d();
-    Pose2d prevRobotPose = new Pose2d();
-
-    ChassisSpeeds chassisSpeeds;
-
-    SwerveDrivePoseEstimator m_odometry;
-
-    public static final AHRS gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
-
     SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];
+    ChassisSpeeds chassisSpeeds;
+    SwerveDrivePoseEstimator m_odometry;
+    static AHRS gyro;
 
     PIDController angleHoldController = new PIDController(10, 0, 0); // edit the vals
-
     PIDController rotationController;
 
     public SwerveDrive() {
 
         DRIVETRAIN = DriveTrain.getInstance();
 
+        gyro = new AHRS(AHRS.NavXComType.kMXP_SPI);
         gyro.reset();
-        //gyro.setAngleAdjustment(0);
+        gyro.setAngleAdjustment(0);
 
         m_odometry = new SwerveDrivePoseEstimator(
             DRIVETRAIN.swerveKinematics,
             getHeading(),
             DRIVETRAIN.getModulePositions(),
-            robotPose,
-            VecBuilder.fill(0.001, 0.001, Units.degreesToRadians(0.1)),
-            VecBuilder.fill(0.01, 0.01, Units.degreesToRadians(10)));
+            robotPose);
 
         setFieldOriented();
+
         angleHoldController.disableContinuousInput();
         angleHoldController.setTolerance(Math.toRadians(2)); // the usual drift
 
@@ -98,12 +78,8 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         rotationController.enableContinuousInput(-180, 180);
         rotationController.setTolerance(2);
 
-        tagController  = new PIDController(0.1, 0, 0);
-        tagController.setTolerance(1);
-        noteController = new PIDController(0.1, 0, 0);
-        noteController.setTolerance(1);
-
         chassisSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(0, 0, 0, new Rotation2d(Math.toRadians(gyro.getAngle())));
+        resetOdometry(new Pose2d(7.3, 4.2, gyro.getRotation2d()));
     }
 
     /**
@@ -111,16 +87,23 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
      */
     @Override
     public void periodic() {
+        m_odometry.update(getHeading(), DRIVETRAIN.getModulePositions());
 
-        deltaTime = Timer.getFPGATimestamp() - prevTime;
-        prevTime = Timer.getFPGATimestamp();
+        //robotPose = updateOdometry();
 
-        prevRobotPose = m_odometry.getEstimatedPosition();
-        robotPose = updateOdometry();
+        SmartDashboard.putNumber("xpos", m_odometry.getEstimatedPosition().getX());
+        SmartDashboard.putNumber("ypos", m_odometry.getEstimatedPosition().getY());
+        SmartDashboard.putNumber("angle", gyro.getAngle());
+    }
 
+    public static SwerveDrive getInstance() {
+        if(SWERVE == null) {
+            SWERVE = new SwerveDrive();
+        }
+        return SWERVE;
     }
     
-    public Command toggleSlowMode() {
+    public Command toggleSlowMode() { //TODO deprecate
         return Commands.runOnce(() -> {slowmode = !slowmode;});
     }
     
@@ -128,7 +111,6 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         slowmode = flag;
     }
 
-    @Log
     public double updateRotationController() {
         rotationControllerOutput = rotationController.calculate(
             getOdometryDegrees(),
@@ -149,22 +131,19 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         return rotationController.atSetpoint();
     }
 
-    //@Log
     public boolean getSlowMode() {
         return slowmode;
     }
 
-    @Log
     public double getOdometryDegrees() {
         return getPose().getRotation().getDegrees();
     }
 
-    @Log
-    public double getRobotAngleDegrees() {
+    public double getGyroDegrees() {
         return getHeading().getDegrees();
     }  
 
-    public DoubleSupplier supplyRobotAngleDegrees() {
+    public DoubleSupplier supplyOdometryDegrees() {
         DoubleSupplier angle = () -> getOdometryDegrees();
         return angle;
     }
@@ -173,17 +152,14 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         return Commands.runOnce(() -> gyro.reset());
     }
 
-    @Log
     public double getyMeters() {
         return m_odometry.getEstimatedPosition().getY();
     }
 
-    @Log
     public double getxMeters() {
         return m_odometry.getEstimatedPosition().getX();
     }
 
-    @Log
     public double getHoldAngle() {
         return holdAngle;
     }
@@ -201,16 +177,19 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     }
     
     public static Rotation2d getHeading() {
-        return new Rotation2d(Math.toRadians(gyro.getAngle()));
+        return gyro.getRotation2d();
     }
 
     public SwerveDriveKinematics getKinematics() {
         return DRIVETRAIN.swerveKinematics;
     }
 
-    @Log
     public boolean getHoldAngleEnabled() {
         return holdAngleEnabled;
+    }
+
+    public ChassisSpeeds getActualSpeeds() {
+        return DRIVETRAIN.getSpeeds();
     }
 
     public void setFieldOriented() {
@@ -226,18 +205,6 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         holdAngleEnabled = flag;
     }
 
-    public void setNoteControllerFlag(boolean flag) {
-        noteControllerEnabled = flag;
-    }
-
-    public void setTagControllerFlag(boolean flag) {
-        tagControllerEnabled = flag;
-    }
-
-    public void setRobotOriented() { //TODO zrusit, NEPOUZIVAT
-        fieldRelative = false;
-    }
-
     public void setOdometry(Pose2d pose) {
         m_odometry.resetPosition(pose.getRotation(), modulePositions, pose);
     }
@@ -249,14 +216,6 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
     public void setAutoChassisSpeeds(ChassisSpeeds speeds) {
         chassisSpeeds = speeds;
         setAutoModuleStates(getKinematics().toSwerveModuleStates(speeds));
-    }
-
-    public void setToBrake() {
-        DRIVETRAIN.setToBrake();
-    }
-
-    public void setToCoast() {
-        DRIVETRAIN.setToCoast();
     }
 
     public Command joystickDrive(DoubleSupplier lx, DoubleSupplier ly, DoubleSupplier rx, SwerveDrive drive) {
@@ -272,7 +231,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
             rotation = deadzone(rightX) * deadzone(rightX) * Math.signum(rightX) * SwerveConstants.MAX_SPEED_RADIANSperSECOND * DriverConstants.TURN_GOVERNOR;
 
 
-            if(slowmode) { //TODO probably disable, there is no need to go slow this year and there is nothing to break on the robot
+            if(slowmode) { 
                 xSpeed = xSpeed * DriverConstants.PRECISION_RATIO;
                 ySpeed = ySpeed * DriverConstants.PRECISION_RATIO;
                 rotation = rotation * DriverConstants.PRECISION_RATIO;
@@ -294,7 +253,7 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         }, drive);
     }
 
-    public double deadzone(double input) { //TODO prepsat inline
+    public double deadzone(double input) {
         if (Math.abs(input) < 0.2) {
             return 0;
         } else {
@@ -306,30 +265,9 @@ public class SwerveDrive extends SubsystemBase implements Loggable{
         return DriverStation.getAlliance().get() == DriverStation.Alliance.Red;
     }
 
-    //@Config.ToggleButton(defaultValue = false, tabName = "robotMain", columnIndex = 2, rowIndex = 0, width = 2, height = 2)
     void gyroReset(boolean input) {
         if(input) {
             m_odometry.resetPosition(getHeading(), DRIVETRAIN.getModulePositions(), new Pose2d(robotPose.getTranslation(), new Rotation2d(0)));
-        }
-    }
-
-    static class assistPID extends PIDController {
-        double setpoint = 0;
-        double maxSpeed = 0;
-        double offset = 0;
-        public assistPID(double kP, double kI, double kD, double setpoint) {
-            super(kP, kI, kD);
-            this.setpoint = setpoint;
-            this.maxSpeed = SwerveConstants.MAX_SPEED_METERSperSECOND * DriverConstants.DRIVE_GOVERNOR;
-        }
-
-        public void setOffset(double value) {
-            offset = value;
-        }
-
-        public double pidGet() {
-            double speed = MathUtil.clamp(super.calculate(offset, setpoint), -maxSpeed, maxSpeed);
-            return -speed;
         }
     }
 }

@@ -7,29 +7,40 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import io.github.oblarg.oblog.Loggable;
-import io.github.oblarg.oblog.Logger;
+import frc.robot.Constants.ColourConstants;
+import frc.robot.subsystems.DriveTrain;
+import frc.robot.subsystems.LEDs;
+import frc.robot.util.Report;
 
-public class Robot extends TimedRobot implements Loggable{
-  private Command m_autonomousCommand;
+public class Robot extends TimedRobot{
+  public static Command m_autonomousCommand;
 
-  private RobotContainer m_robotContainer;
+  RobotContainer m_robotContainer;
+  Report REPORT;
+  DriveTrain DRIVETRAIN;
+  LEDs LEDS;
 
   @Override
   public void robotInit() {
     ScoringTracker scoringTracker = new ScoringTracker();
     m_robotContainer = new RobotContainer();
-    Logger.configureLoggingAndConfig(this, false);
+    REPORT = Report.getInstance();
+    DRIVETRAIN = DriveTrain.getInstance();
+    LEDS = LEDs.getInstance();
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    Logger.updateEntries();
+    REPORT.periodic();
+    m_robotContainer.periodic();
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    DRIVETRAIN.setSteerToCoast();
+    LEDS.setColour(ColourConstants.DARKBLUE);
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -40,11 +51,16 @@ public class Robot extends TimedRobot implements Loggable{
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.schedule();
+    } else {
+      System.out.println("outonomous command null");
     }
+    LEDS.setColour(ColourConstants.PINK);
   }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    //RobotContainer.check_for_auto_change_periodic();
+  }
 
   @Override
   public void teleopInit() {
@@ -62,7 +78,12 @@ public class Robot extends TimedRobot implements Loggable{
   }
 
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+    DRIVETRAIN.flModule.testModule();
+    DRIVETRAIN.frModule.testModule();
+    DRIVETRAIN.rlModule.testModule();
+    DRIVETRAIN.rrModule.testModule();
+  }
 
   @Override
   public void simulationInit() {}

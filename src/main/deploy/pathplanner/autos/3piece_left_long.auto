@@ -7,13 +7,13 @@
         {
           "type": "named",
           "data": {
-            "name": "set_speaker"
+            "name": null
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": null
           }
         },
         {
@@ -31,19 +31,19 @@
         {
           "type": "named",
           "data": {
-            "name": "set_speaker"
+            "name": null
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": null
           }
         },
         {
           "type": "path",
           "data": {
-            "pathName": "Example Path"
+            "pathName": null
           }
         },
         {
@@ -55,13 +55,13 @@
         {
           "type": "named",
           "data": {
-            "name": "set_speaker"
+            "name": null
           }
         },
         {
           "type": "named",
           "data": {
-            "name": "shoot"
+            "name": null
           }
         },
         {
