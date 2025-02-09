@@ -37,7 +37,7 @@ public class Vision extends SubsystemBase {
         tag = new PhotonTrackedTarget();
         SWERVE = SwerveDrive.getInstance();
         aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-        cameraToRobot = new Transform2d(null, null, new Rotation2d(0)); //rotation is in rad
+        cameraToRobot = new Transform2d(0, 0, new Rotation2d(0)); //rotation is in rad
     }
 
     PhotonCamera camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");

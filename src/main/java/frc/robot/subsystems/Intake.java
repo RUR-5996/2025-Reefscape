@@ -29,7 +29,9 @@ public class Intake extends SubsystemBase {
     IntakeState intakeState = IntakeState.EMPTY;
     SolenoidState solenoidState = SolenoidState.FALSE; //might be needed to be set to true
 
-    public Intake() {}; //for testing
+    public Intake() {
+        intakeModule = new PneumaticsControlModule(0);
+    }; //for testing
 
     public Intake(int motorId, int frontPiston, int backPiston) {
         intakeMotor = new SparkMax(motorId, MotorType.kBrushless);
