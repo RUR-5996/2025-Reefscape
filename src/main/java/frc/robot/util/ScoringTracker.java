@@ -1,4 +1,4 @@
-package frc.robot;
+package frc.robot.util;
 
 public class ScoringTracker {
     // collumn according to Figure 5-8: Reef Scoring Location Tracking (a = 0, b = 1, ...)

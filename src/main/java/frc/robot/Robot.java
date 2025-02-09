@@ -11,6 +11,7 @@ import frc.robot.Constants.ColourConstants;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.LEDs;
 import frc.robot.util.Report;
+import frc.robot.util.ScoringTracker;
 
 public class Robot extends TimedRobot{
   public static Command m_autonomousCommand;
