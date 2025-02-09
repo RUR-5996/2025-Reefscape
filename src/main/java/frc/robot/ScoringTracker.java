@@ -3,11 +3,11 @@ package frc.robot;
 public class ScoringTracker {
     // collumn according to Figure 5-8: Reef Scoring Location Tracking (a = 0, b = 1, ...)
     // level 0 - 3
-    // 0 = empty; 1 = occupied; 2 = scored
+    // 0 = empty; 1 = occupied by algae; 2 = scored
 
-    static int[] starting_algae_high = {0, 0, 1, 0}; //algea by levels
+    static int[] starting_algae_high = {0, 0, 1, 0}; //algea blocking levels
 
-    static int[] starting_algae_low = {0, 1, 1, 0}; //algea by levels
+    static int[] starting_algae_low = {0, 1, 1, 0}; //algea blocking levels
 
     static int[][] blue = {starting_algae_high, starting_algae_high, starting_algae_low, starting_algae_low, starting_algae_high, starting_algae_high, starting_algae_low, starting_algae_low, starting_algae_high, starting_algae_high, starting_algae_low, starting_algae_low};
     static int[][] red = {starting_algae_high, starting_algae_high, starting_algae_low, starting_algae_low, starting_algae_high, starting_algae_high, starting_algae_low, starting_algae_low, starting_algae_high, starting_algae_high, starting_algae_low, starting_algae_low};
