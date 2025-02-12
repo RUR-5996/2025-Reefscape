@@ -15,6 +15,8 @@ import frc.robot.subsystems.LimeLight;
 import frc.robot.subsystems.Pneumatics;
 import frc.robot.subsystems.SwerveDrive;
 import frc.robot.subsystems.Vision;
+import frc.robot.util.ApriltagScanning;
+import frc.robot.util.ScoringTracker;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
@@ -38,14 +40,18 @@ public class RobotContainer {
           RobotConfig config;
           public Pneumatics PNEUMATICS;
           public Vision VISION;
+          public ApriltagScanning APRIL;
+          public ScoringTracker SCORING;
 
           public RobotContainer() {
+            APRIL = ApriltagScanning.getInstance();
             SWERVE = SwerveDrive.getInstance();
             DRIVETRAIN = DriveTrain.getInstance();
             LEDS = LEDs.getInstance();
             ELEVATOR = Elevator.getInstance();
             VISION = Vision.getInstance();
             INTAKE = new Intake();
+            SCORING = ScoringTracker.getInstance();
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
 

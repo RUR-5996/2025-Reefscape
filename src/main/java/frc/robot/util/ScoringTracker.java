@@ -1,6 +1,14 @@
 package frc.robot.util;
 
 public class ScoringTracker {
+    private static ScoringTracker SCORING;
+    public static ScoringTracker getInstance() {
+    if(SCORING == null) {
+        SCORING = new ScoringTracker();
+    }
+    return SCORING;
+    }
+
     // collumn according to Figure 5-8: Reef Scoring Location Tracking (a = 0, b = 1, ...)
     // level 0 - 3
     // 0 = empty; 1 = occupied by algae; 2 = scored

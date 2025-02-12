@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ColourConstants;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.LEDs;
+import frc.robot.util.ApriltagScanning;
 import frc.robot.util.Report;
 import frc.robot.util.ScoringTracker;
 
@@ -20,10 +21,14 @@ public class Robot extends TimedRobot{
   Report REPORT;
   DriveTrain DRIVETRAIN;
   LEDs LEDS;
+  ApriltagScanning APRIL;
+  ScoringTracker SCORING;
+
 
   @Override
   public void robotInit() {
-    ScoringTracker scoringTracker = new ScoringTracker();
+    SCORING = ScoringTracker.getInstance();
+    APRIL = ApriltagScanning.getInstance();
     m_robotContainer = new RobotContainer();
     REPORT = Report.getInstance();
     DRIVETRAIN = DriveTrain.getInstance();
