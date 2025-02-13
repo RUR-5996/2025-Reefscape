@@ -62,6 +62,8 @@ public class Elevator extends SubsystemBase {
         rightEncoder = rightMotor.getEncoder(); 
         //rightEncoder.setPosition(0);
         rightController = rightMotor.getClosedLoopController();
+
+        SmartDashboard.putBoolean("algaePrio", true);
     }
 
     public static Elevator getInstance() {
@@ -93,6 +95,7 @@ public class Elevator extends SubsystemBase {
         } else {
             algaePrioState = AlgaePrioState.OFF;
         }
+        SmartDashboard.putString("algae prio", getAlgaePrio());
     }
 
 
@@ -102,7 +105,7 @@ public class Elevator extends SubsystemBase {
     public String getAlgaePrio() {
         return algaePrioState.toString();
     }
-
+ 
     public void setHeight() {
         leftController.setReference(getMotorRotations(500), ControlType.kPosition);
     }

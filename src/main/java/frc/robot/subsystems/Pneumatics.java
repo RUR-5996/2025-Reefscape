@@ -7,9 +7,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-import io.github.oblarg.oblog.Loggable;
-
-public class Pneumatics extends SubsystemBase implements Loggable {
+public class Pneumatics extends SubsystemBase {
     private final Solenoid left_intake_solenoid_1 = new Solenoid(PneumaticsModuleType.CTREPCM, 0);
     private final Solenoid left_intake_solenoid_2 = new Solenoid(PneumaticsModuleType.CTREPCM, 0);
     private final Solenoid right_intake_solenoid_1 = new Solenoid(PneumaticsModuleType.CTREPCM, 0);
