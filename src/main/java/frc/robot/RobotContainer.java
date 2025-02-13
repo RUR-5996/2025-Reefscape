@@ -125,6 +125,7 @@ public class RobotContainer {
 
       public void periodic() {
         VISION.report();
+        ELEVATOR.AlgaePrioUpdate();
       }
 
       /*public static void check_for_auto_change_periodic() {

@@ -1,11 +1,5 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
-import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
@@ -17,37 +11,13 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
-import frc.robot.Constants.SwerveConstants;
 
-import com.ctre.phoenix6.configs.ClosedLoopRampsConfigs;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.FeedbackConfigs;
-import com.ctre.phoenix6.configs.OpenLoopRampsConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.SparkMaxConfig;
-import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.AbsoluteEncoder;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkClosedLoopController;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.SwerveConstants;
 
 public class Elevator extends SubsystemBase {
 
@@ -65,7 +35,7 @@ public class Elevator extends SubsystemBase {
     SparkClosedLoopController leftController;
     SparkClosedLoopController rightController;
 
-    public Elevator() {            
+    public Elevator() {
         leftMotor = new SparkMax(5, MotorType.kBrushless);
         rightMotor = new SparkMax(6, MotorType.kBrushless);
 
@@ -115,9 +85,22 @@ public class Elevator extends SubsystemBase {
     }
 
 
+    AlgaePrioState algaePrioState = AlgaePrioState.ON;
+
+    public void AlgaePrioUpdate() {
+        if (SmartDashboard.getBoolean("algaePrio", true)) {
+            algaePrioState = AlgaePrioState.ON;
+        } else {
+            algaePrioState = AlgaePrioState.OFF;
+        }
+    }
+
 
     public String getElevatorState() {
         return state.toString();
+    }
+    public String getAlgaePrio() {
+        return algaePrioState.toString();
     }
 
     public void setHeight() {
@@ -131,6 +114,12 @@ public class Elevator extends SubsystemBase {
         FLOOR2,
         FLOOR3,
     }
+
+    public enum AlgaePrioState {
+        ON,
+        OFF,
+    }
+
 
     private double floorToMm (ElevatorState floor) {//TODO add conversion to DOWN state
         if (floor == ElevatorState.DOWN) {
