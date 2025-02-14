@@ -11,6 +11,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.util.Report;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -24,6 +26,8 @@ public class Elevator extends SubsystemBase {
     private static Elevator ELEVATOR;
 
     ElevatorState state = ElevatorState.DOWN;
+    ElevatorState manual = ElevatorState.DOWN;
+
 
     public RelativeEncoder leftEncoder;
     public RelativeEncoder rightEncoder;
@@ -34,6 +38,7 @@ public class Elevator extends SubsystemBase {
 
     SparkClosedLoopController leftController;
     SparkClosedLoopController rightController;
+
 
     public Elevator() {
         leftMotor = new SparkMax(5, MotorType.kBrushless);
@@ -64,6 +69,13 @@ public class Elevator extends SubsystemBase {
         rightController = rightMotor.getClosedLoopController();
 
         SmartDashboard.putBoolean("algaePrio", true);
+
+        // create buttons
+        SmartDashboard.putBoolean("DOWN", true);
+        SmartDashboard.putBoolean("FLOOR0", false);
+        SmartDashboard.putBoolean("FLOOR1", false);
+        SmartDashboard.putBoolean("FLOOR2", false);
+        SmartDashboard.putBoolean("FLOOR3", false);
     }
 
     public static Elevator getInstance() {
@@ -74,18 +86,39 @@ public class Elevator extends SubsystemBase {
         return ELEVATOR;
     }
 
-    public Command elevate(ElevatorState floor) {
+    public Command elevate(ElevatorState floor, boolean nic) { //TODO smazat void a bool
         return Commands.runOnce(() -> {
             //double rotations = getMotorRotations((floorToMm(floor)-frc.robot.Constants.ElevatorConstants.DOWN));
             double rotations = getStateRotations(floor);
             leftController.setReference(rotations, SparkMax.ControlType.kPosition);
             rightController.setReference(rotations, SparkMax.ControlType.kPosition);
             state = floor;
-            SmartDashboard.putString("floor", state.toString()); //reports state
             SmartDashboard.putNumber("rotations", rotations);
         });
     }
+    
+    public void elevate(ElevatorState floor) {
+        //double rotations = getStateRotations(floor);
+        double rotations = getMotorRotations((floorToMm(floor)-frc.robot.Constants.ElevatorConstants.DOWN)); //TODO fix mezifloor travel
+        leftController.setReference(rotations, SparkMax.ControlType.kPosition);
+        rightController.setReference(rotations, SparkMax.ControlType.kPosition);
+        state = floor;
+        SmartDashboard.putNumber("rotations", rotations);
+    }
 
+    public void report() {
+        SmartDashboard.putString("floor", state.toString());
+    }
+
+    public void checkManual() {
+        for (ElevatorState f : ElevatorState.values()){
+            if ((SmartDashboard.getBoolean(f.toString(), false)) && (!(f==manual))){
+                SmartDashboard.putBoolean(manual.toString(), false);
+                manual = f;    
+                elevate(f);
+            }
+        }
+    }
 
     AlgaePrioState algaePrioState = AlgaePrioState.ON;
 
@@ -104,6 +137,9 @@ public class Elevator extends SubsystemBase {
     }
     public String getAlgaePrio() {
         return algaePrioState.toString();
+    }
+    public String getManual(){
+        return manual.toString();
     }
  
     public void setHeight() {
