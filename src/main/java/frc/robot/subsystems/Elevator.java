@@ -12,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.Constants;
 import frc.robot.util.Report;
 
 import com.revrobotics.spark.SparkMax;
@@ -97,9 +98,9 @@ public class Elevator extends SubsystemBase {
         });
     }
     
-    public void elevate(ElevatorState floor) {
+    public void elevate(ElevatorState floor) { //takes target floor
         //double rotations = getStateRotations(floor);
-        double rotations = getMotorRotations((floorToMm(floor)-frc.robot.Constants.ElevatorConstants.DOWN)); //TODO fix mezifloor travel
+        double rotations = (getMotorRotations(floorToDownMM(floor))) - (getMotorRotations(floorToDownMM(state))); //TODO fix mezifloor travel
         leftController.setReference(rotations, SparkMax.ControlType.kPosition);
         rightController.setReference(rotations, SparkMax.ControlType.kPosition);
         state = floor;
@@ -172,6 +173,18 @@ public class Elevator extends SubsystemBase {
         } if (floor == ElevatorState.FLOOR3) {
             return frc.robot.Constants.ElevatorConstants.FLOOR3;
         } return 0; //invalid floor inputed
+    }
+
+    private double floorToDownMM (ElevatorState floor) {// returns number of mms between wanted floor and down
+        if (floor == ElevatorState.FLOOR0) {
+            return frc.robot.Constants.ElevatorConstants.FLOOR0 - Constants.ElevatorConstants.DOWN;
+        } if (floor == ElevatorState.FLOOR1) {
+            return frc.robot.Constants.ElevatorConstants.FLOOR1 - Constants.ElevatorConstants.DOWN;
+        } if (floor == ElevatorState.FLOOR2) {
+            return frc.robot.Constants.ElevatorConstants.FLOOR2 - Constants.ElevatorConstants.DOWN;
+        } if (floor == ElevatorState.FLOOR3) {
+            return frc.robot.Constants.ElevatorConstants.FLOOR3 - Constants.ElevatorConstants.DOWN;
+        } return 0; //wanted down or invalid floor inputed
     }
 
     private double getMotorRotations(double height_requested_m_L) { //enter double of elevator extension in mm, returns number of windings of the motor required to achieve that
