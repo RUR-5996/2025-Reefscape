@@ -15,6 +15,8 @@ import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
 
+import java.lang.annotation.Target;
+import java.util.List;
 import java.util.concurrent.locks.Condition;
 
 import javax.xml.crypto.dsig.TransformException;
@@ -22,6 +24,7 @@ import javax.xml.transform.Result;
 
 import org.photonvision.*;
 import org.photonvision.targeting.PhotonTrackedTarget;
+import org.photonvision.targeting.TargetCorner;
 
 public class Vision extends SubsystemBase {
 
@@ -79,11 +82,34 @@ public class Vision extends SubsystemBase {
             var result = camera.getLatestResult();
             if (result.hasTargets()) { 
                 tag = result.getBestTarget();
+                List<TargetCorner> corners = tag.getMinAreaRectCorners();
+                TargetCorner corner = corners.get(0);
+                SmartDashboard.putNumber("corner 0 x", corner.x);
+                }
             }
-        });
+        );
     }
 
+    public void command (boolean nic) {
+        state = VisionState.OBJECT;
+        camera.setPipelineIndex(1); //set pipeline to object 
+        var result = camera.getLatestResult();
+        if (result.hasTargets()) { 
+            tag = result.getBestTarget();
+            List<TargetCorner> corners = tag.getMinAreaRectCorners(); 
+            // 0:bottom left, 1:bottom right, 2:top right, 3:top left
+            SmartDashboard.putNumber("x corner 0", corners.get(0).x);
+            SmartDashboard.putNumber("y corner 0", corners.get(0).y);
+            SmartDashboard.putNumber("x corner 1", corners.get(1).x);
+            SmartDashboard.putNumber("y corner 1", corners.get(1).y);
+            SmartDashboard.putNumber("x corner 2", corners.get(2).x);
+            SmartDashboard.putNumber("y corner 2", corners.get(2).y);
+            SmartDashboard.putNumber("x corner 3", corners.get(3).x);
+            SmartDashboard.putNumber("y corner 3", corners.get(3).y);
+            } 
+    }
 
+  
     public String getVisionState() {
         return state.toString();
     }

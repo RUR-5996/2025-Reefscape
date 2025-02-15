@@ -86,8 +86,8 @@ public final class Constants {
   }
 
   public static class ElevatorConstants { //all measurements in mm
-    public static double DOWN = 250.0;
-    public static double FLOOR0 = 457.2;
+    public static double DOWN = 310.0; //only updated with current construction!!
+    public static double FLOOR0 = 457.2; //TODO update!!
     public static double FLOOR1 = 809.6;
     public static double FLOOR2 = 1209.7;
     public static double FLOOR3 = 1828.8;
