@@ -50,7 +50,7 @@ public class Elevator extends SubsystemBase {
             .idleMode(IdleMode.kBrake);
         config.closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .p(1.5)
+            .p(10)
             .i(0)
             .d(0)
             .outputRange(-0.3, 0.3)
@@ -62,11 +62,11 @@ public class Elevator extends SubsystemBase {
         rightMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
         leftEncoder = leftMotor.getEncoder(); 
-        //leftEncoder.setPosition(0);
+        leftEncoder.setPosition(0);
         leftController = leftMotor.getClosedLoopController();
 
         rightEncoder = rightMotor.getEncoder(); 
-        //rightEncoder.setPosition(0);
+        rightEncoder.setPosition(0);
         rightController = rightMotor.getClosedLoopController();
 
         SmartDashboard.putBoolean("algaePrio", true);
@@ -100,15 +100,19 @@ public class Elevator extends SubsystemBase {
     
     public void elevate(ElevatorState floor) { //takes target floor
         //double rotations = getStateRotations(floor);
-        double rotations = (getMotorRotations(floorToDownMM(floor))) - (getMotorRotations(floorToDownMM(state))); //TODO fix mezifloor travel
+        double rotations = (getMotorRotations(floorToDownMM(floor))); //TODO fix mezifloor travel
+        SmartDashboard.putNumber("Target rotations", getStateRotations(floor));
+        SmartDashboard.putNumber("Current rotations", getStateRotations(state));
+        SmartDashboard.putNumber("rotations", rotations);
         leftController.setReference(rotations, SparkMax.ControlType.kPosition);
         rightController.setReference(rotations, SparkMax.ControlType.kPosition);
         state = floor;
-        SmartDashboard.putNumber("rotations", rotations);
     }
 
     public void report() {
         SmartDashboard.putString("floor", state.toString());
+        SmartDashboard.putNumber("left motor", leftEncoder.getPosition());
+        SmartDashboard.putNumber("right motor", rightEncoder.getPosition());
     }
 
     public void checkManual() {
@@ -209,15 +213,17 @@ public class Elevator extends SubsystemBase {
     double getStateRotations(ElevatorState state) {
         switch (state) {
             case DOWN:
-                return -15;
+                return 0;
+            case FLOOR0:
+                return 5;
             case FLOOR1:
-                return 10.0;
+                return 10;
             case FLOOR2:
                 return 40;
             case FLOOR3:
                 return 54;
             default:
-                return 0.0;
+                return 0;
         }
     }
 }
