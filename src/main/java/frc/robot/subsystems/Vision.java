@@ -23,6 +23,7 @@ import javax.xml.crypto.dsig.TransformException;
 import javax.xml.transform.Result;
 
 import org.photonvision.*;
+import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
 
@@ -90,9 +91,9 @@ public class Vision extends SubsystemBase {
         );
     }
 
-    public void command (boolean nic) {
+    public void object(boolean nic) {
         state = VisionState.OBJECT;
-        camera.setPipelineIndex(1); //set pipeline to object 
+        camera.setPipelineIndex(1); //set pipeline to object
         var result = camera.getLatestResult();
         if (result.hasTargets()) { 
             tag = result.getBestTarget();
@@ -109,7 +110,27 @@ public class Vision extends SubsystemBase {
             } 
     }
 
-  
+    public static PhotonTrackedTarget simulateForLoop(int i, List<PhotonTrackedTarget> list) {
+        if (i+1 == list.size()) {
+            return list.get(i);
+        }
+        //TODO check location of target
+        simulateForLoop(i + 1, list); // Recursive call, simulating increment
+
+    public void coralCheck(double distance, PhotonPipelineResult result) { //takes distance from coral in m
+        // get conversion factor& other math things
+        double x = Math.sqrt(Math.pow(distance, 2) + Math.pow(Constants.VisionConstants.cameraHeight, 2));
+        double height_m = Math.tan(Constants.VisionConstants.cameraFOV) * x;
+        double conversion_factor = height_m/Constants.VisionConstants.pictureHeight; //multiply pixels by this= get irl
+        double cam_height_px = Math.tan(Constants.VisionConstants.cameraPitch) * distance;
+        double floor0_px = (cam_height_px - Constants.VisionConstants.cameraHeight / conversion_factor) + 0.45 /conversion_factor;
+        //TODO get bounds for positions on reef
+        //TODO detect objects
+        List<PhotonTrackedTarget> targets = result.getTargets();
+
+    }
+
+
     public String getVisionState() {
         return state.toString();
     }

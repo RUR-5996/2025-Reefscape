@@ -128,7 +128,7 @@ public class RobotContainer {
         ELEVATOR.AlgaePrioUpdate();
         ELEVATOR.checkManual();
         ELEVATOR.report();
-        VISION.command(true);
+        VISION.object(true);
       }
 
       /*public static void check_for_auto_change_periodic() {

@@ -97,5 +97,7 @@ public final class Constants {
     public static double reefAprilTagHeight = .308102;
     public static double cameraHeight = 0; //TODO measure
     public static double cameraPitch = 0; //in radians
+    public static double cameraFOV = 1.74533; //in radians TODO change
+    public static double pictureHeight = 1280; //in pixels TODO fact check
   }
 }
