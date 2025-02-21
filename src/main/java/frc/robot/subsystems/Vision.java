@@ -55,7 +55,8 @@ public class Vision extends SubsystemBase {
 
     public void report() {
         SmartDashboard.putString("Pipeline", getVisionState());
-        SmartDashboard.putNumber("TagID", (tag.getFiducialId())); //reports apriltag
+        april(true);
+        //SmartDashboard.putNumber("TagID", (tag.getFiducialId())); //reports apriltag
     }
 
     /*public PhotonTrackedTarget getTarget() {
@@ -76,6 +77,15 @@ public class Vision extends SubsystemBase {
     }});
     }
 
+    public void april(boolean nic){
+        state = VisionState.APRIL;
+        camera.setPipelineIndex(0); //set pipeline to apriltag
+        var result = camera.getLatestResult();
+        if (result.hasTargets()) { 
+            tag = result.getBestTarget();
+            SmartDashboard.putNumber("TagID", (tag.getFiducialId()));
+        }
+    }
     public Command object() {
         return Commands.runOnce(() -> {
             state = VisionState.OBJECT;
@@ -114,8 +124,8 @@ public class Vision extends SubsystemBase {
         if (i+1 == list.size()) {
             return list.get(i);
         }
-        //TODO check location of target
-        simulateForLoop(i + 1, list); // Recursive call, simulating increment
+        return simulateForLoop(i + 1, list);
+    }
 
     public void coralCheck(double distance, PhotonPipelineResult result) { //takes distance from coral in m
         // get conversion factor& other math things
