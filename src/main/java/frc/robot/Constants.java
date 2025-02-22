@@ -93,12 +93,14 @@ public final class Constants {
     public static double FLOOR3 = 1828.8;
   }
 
-  public static class VisionConstants { //all measurements in m
+  public static class VisionConstants { //all lenghts in m, angles in rad
     public static double reefAprilTagHeight = .308102;
     public static double cameraHeight = 0; //TODO measure
     public static double cameraWidth = 0;
     public static double cameraPitch = 0; //in radians
     public static double cameraFOV = 1.74533; //in radians TODO change
-    public static double pictureHeight = 1280; //in pixels TODO fact check
-  }
-}
+    public static double pictureHeight = 320; //in pixels TODO fact check
+
+    public static double limelightFOVVer = 0.853466;
+    public static double limelightFOVHor = 1.090831;
+}}
