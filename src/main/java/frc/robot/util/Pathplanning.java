@@ -58,6 +58,34 @@ public class Pathplanning {
         PathPlannerPath path = new  PathPlannerPath(PathPlannerPath.waypointsFromPoses(start, end), null, null, new GoalEndState(0, end.getRotation()));
         path.preventFlipping = true;
         return path;
-    } 
+    }
+
+    public static double getLeftTagID (double tagID) { //returns ID of a tag on the reef left of input tag
+        if (tagID < 22 && tagID >= 17) {
+            return tagID - 1;
+        } else if (tagID == 22) {
+            return 17;
+        } else if (tagID <= 11 && tagID > 6) {
+            return tagID - 1;
+        } else if (tagID == 6) {
+            return 11;
+        } else {
+            return 0;
+        }
+    }
+
+    public static double getRightTagID (double tagID) { //returns ID of a tag on the reef right of input tag
+        if (tagID <= 22 && tagID > 17) {
+            return tagID + 1;
+        } else if (tagID == 17) {
+            return 22;
+        } else if (tagID < 11 && tagID >= 6) {
+            return tagID + 1;
+        } else if (tagID == 11) {
+            return 6;
+        } else {
+            return 0;
+        }
+    }
 
 }
