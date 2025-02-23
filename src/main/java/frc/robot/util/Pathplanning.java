@@ -40,8 +40,8 @@ public class Pathplanning {
 
                 //calculate offset of x, y from total offset (hypotenuse)
         double alpha = angle % 90;
-        double a = Math.sin(alpha) * offset; //adjacent
-        double b = Math.cos(alpha) * offset; //opposite
+        double a = Math.sin(alpha) * offset; //opposite
+        double b = Math.cos(alpha) * offset; //adjacent
 
         if (angle < 90) {
             return getPath(start, new Pose2d(x - b * modifier, y + a * modifier, Rotation2d.fromDegrees(angle)));
