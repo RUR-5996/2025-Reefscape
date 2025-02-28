@@ -1,10 +1,10 @@
 package frc.robot.subsystems;
 
-import com.fasterxml.jackson.core.util.ReadConstrainedTextBuffer;
-import com.revrobotics.spark.SparkMax;
-
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -13,16 +13,12 @@ import frc.robot.Constants;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Pose3d;
 
-import java.lang.annotation.Target;
 import java.util.List;
-import java.util.concurrent.locks.Condition;
-
-import javax.xml.crypto.dsig.TransformException;
-import javax.xml.transform.Result;
 
 import org.photonvision.*;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.photonvision.targeting.TargetCorner;
@@ -35,16 +31,20 @@ public class Vision extends SubsystemBase {
     VisionState state = VisionState.APRIL;
     PhotonTrackedTarget tag;
     AprilTagFieldLayout aprilTagFieldLayout;
-    Transform2d cameraToRobot;
+    Transform2d cameraToRobot2d;
+    Transform3d cameraToRobot3d;
+    PhotonPoseEstimator photonPoseEstimator;
+    PhotonCamera camera;
 
     public Vision() {
+        camera = new PhotonCamera("Limelight-3");
+        cameraToRobot3d = new Transform3d(new Translation3d(0.0, 0.0, 0), new Rotation3d(0,0,0)); //TODO measure
         tag = new PhotonTrackedTarget();
         SWERVE = SwerveDrive.getInstance();
         aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
-        cameraToRobot = new Transform2d(0, 0, new Rotation2d(0)); //rotation is in rad
+        cameraToRobot2d = new Transform2d(0, 0, new Rotation2d(0)); //rotation is in rad
+        photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, cameraToRobot3d);
     }
-
-    PhotonCamera camera = new PhotonCamera("Microsoft_LifeCam_HD-3000");
 
     public static Vision getInstance() {
         if(VISION == null) {
@@ -52,6 +52,12 @@ public class Vision extends SubsystemBase {
         }
         return VISION;
     }
+
+public Pose3d getRobotPose() {
+    var result = camera.getLatestResult();
+    PhotonTrackedTarget target = result.getBestTarget();
+    return PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), aprilTagFieldLayout.getTagPose(target.getFiducialId()).get(), cameraToRobot3d);
+}
 
     public void report() {
         SmartDashboard.putString("Pipeline", getVisionState());
@@ -86,12 +92,13 @@ public class Vision extends SubsystemBase {
             SmartDashboard.putNumber("TagID", (tag.getFiducialId()));
         }
     }
+
     public Command object() {
         return Commands.runOnce(() -> {
             state = VisionState.OBJECT;
             camera.setPipelineIndex(1); //set pipeline to object 
             var result = camera.getLatestResult();
-            if (result.hasTargets()) { 
+            if (result.hasTargets()) {
                 tag = result.getBestTarget();
                 List<TargetCorner> corners = tag.getMinAreaRectCorners();
                 TargetCorner corner = corners.get(0);
@@ -127,8 +134,19 @@ public class Vision extends SubsystemBase {
         return simulateForLoop(i + 1, list);
     }
 
+    public double getDistanceToTag(PhotonTrackedTarget target) {
+        double distanceToTarget = 0.0;
+        if (aprilTagFieldLayout.getTagPose(target.getFiducialId()).isPresent()) {
+            Pose3d robotPose = PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), aprilTagFieldLayout.getTagPose(target.getFiducialId()).get(), cameraToRobot3d);
+            Pose3d targetPose = aprilTagFieldLayout.getTagPose(target.getFiducialId()).get();
+            distanceToTarget = PhotonUtils.getDistanceToPose(robotPose.toPose2d(), targetPose.toPose2d());
+        }
+        
+        return distanceToTarget;
+    }
+
     public void coralCheck(double distance, PhotonPipelineResult result) { //takes distance from coral in m
-        // get conversion factor& other math things
+        // get conversion factor & other math things
         double x = Math.sqrt(Math.pow(distance, 2) + Math.pow(Constants.VisionConstants.cameraHeight, 2));
         double height_m = Math.tan(Constants.VisionConstants.cameraFOV) * x;
         double conversion_factor = height_m/Constants.VisionConstants.pictureHeight; //multiply pixels by this= get irl
@@ -156,7 +174,7 @@ public class Vision extends SubsystemBase {
             PhotonTrackedTarget target = result.getBestTarget();
             Pose2d targetPose = aprilTagFieldLayout.getTagPose(target.getFiducialId()).get().toPose2d();
             Pose2d robotPose = PhotonUtils.estimateFieldToRobot(
-            Constants.VisionConstants.cameraHeight, Constants.VisionConstants.reefAprilTagHeight, Constants.VisionConstants.cameraPitch, Math.toRadians(target.getPitch()), Rotation2d.fromDegrees(-target.getYaw()), SWERVE.gyro.getRotation2d(), targetPose, cameraToRobot);
+            Constants.VisionConstants.cameraHeight, Constants.VisionConstants.reefAprilTagHeight, Constants.VisionConstants.cameraPitch, Math.toRadians(target.getPitch()), Rotation2d.fromDegrees(-target.getYaw()), SWERVE.gyro.getRotation2d(), targetPose, cameraToRobot2d);
         }); //TODO accurate camera height, camera offset
     }
 }

@@ -11,7 +11,9 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -23,11 +25,14 @@ public class Intake extends SubsystemBase {
     RelativeEncoder intakeEncoder;
     SparkClosedLoopController intakeController;
 
-    Solenoid intakeSolenoid;
+    DoubleSolenoid intakeSolenoid;
     PneumaticsControlModule intakeModule;
 
     IntakeState intakeState = IntakeState.EMPTY;
-    SolenoidState solenoidState = SolenoidState.FALSE; //might be needed to be set to true
+    SolenoidState solenoidState = SolenoidState.FORWARD;
+    PassiveIntake passiveIntakePrio = PassiveIntake.IN;
+
+
 
     public Intake() {}; //for testing
 
@@ -51,18 +56,29 @@ public class Intake extends SubsystemBase {
 
         intakeModule = new PneumaticsControlModule(0);
 
-        intakeSolenoid = new Solenoid(0, PneumaticsModuleType.CTREPCM, frontPiston);
-        intakeSolenoid.set(false); //might be needed to be set to true
+        intakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
+        intakeSolenoid.set(DoubleSolenoid.Value.kForward);
+
+        SmartDashboard.putBoolean("Passive intake out", false);
     }
+
+    public void prioState() {
+        if (SmartDashboard.getBoolean("Passive intake out", false) & passiveIntakePrio == PassiveIntake.IN) {
+            passiveIntakePrio = PassiveIntake.OUT;
+        }
+        else if (SmartDashboard.getBoolean("Passive intake out", true) & passiveIntakePrio == PassiveIntake.OUT){
+            passiveIntakePrio = PassiveIntake.IN;
+        }
+        }
 
     public Command toggleSolenoid() {
         return Commands.runOnce(() -> {
-            if (solenoidState == SolenoidState.FALSE) {
-                intakeSolenoid.set(true);
-                solenoidState = SolenoidState.TRUE;
+            if (solenoidState == SolenoidState.FORWARD) {
+                intakeSolenoid.set(Value.kReverse);
+                solenoidState = SolenoidState.REVERSE;
             } else {
-                intakeSolenoid.set(false);
-                solenoidState = SolenoidState.FALSE;
+                intakeSolenoid.set(Value.kForward);
+                solenoidState = SolenoidState.FORWARD;
             }
         });
     }
@@ -70,7 +86,7 @@ public class Intake extends SubsystemBase {
     public Command intake() {
         return Commands.run(() -> {
             intakeMotor.set(.5);
-        }); //TODO
+        });
     }
 
     public String getIntakeState() {
@@ -81,6 +97,12 @@ public class Intake extends SubsystemBase {
         return solenoidState.toString();
     }
 
+    private enum PassiveIntake {
+        OUT,
+        IN,
+        ERROR,
+    }
+
     private enum IntakeState {
         EMPTY,
         FULL,
@@ -88,8 +110,8 @@ public class Intake extends SubsystemBase {
     }
 
     private enum SolenoidState {
-        TRUE,
-        FALSE,
+        FORWARD,
+        REVERSE,
         ERROR,
     }
 }

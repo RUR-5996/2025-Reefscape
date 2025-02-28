@@ -129,6 +129,7 @@ public class RobotContainer {
         ELEVATOR.checkManual();
         ELEVATOR.report();
         VISION.object(true);
+        INTAKE.prioState();
       }
 
       /*public static void check_for_auto_change_periodic() {
