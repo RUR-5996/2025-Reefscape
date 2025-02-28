@@ -1,8 +1,5 @@
 package frc.robot.subsystems;
 
-import com.fasterxml.jackson.core.util.ReadConstrainedTextBuffer;
-import com.revrobotics.spark.SparkMax;
-
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -17,14 +14,8 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Transform2d;
 
-import java.lang.annotation.Target;
 import java.util.List;
-import java.util.concurrent.locks.Condition;
-
-import javax.xml.crypto.dsig.TransformException;
-import javax.xml.transform.Result;
 
 import org.photonvision.*;
 import org.photonvision.PhotonPoseEstimator.PoseStrategy;
@@ -52,7 +43,7 @@ public class Vision extends SubsystemBase {
         SWERVE = SwerveDrive.getInstance();
         aprilTagFieldLayout = AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
         cameraToRobot2d = new Transform2d(0, 0, new Rotation2d(0)); //rotation is in rad
-        photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.CLOSEST_TO_REFERENCE_POSE, cameraToRobot3d);
+        photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, cameraToRobot3d);
     }
 
     public static Vision getInstance() {
@@ -61,6 +52,12 @@ public class Vision extends SubsystemBase {
         }
         return VISION;
     }
+
+public Pose3d getRobotPose() {
+    var result = camera.getLatestResult();
+    PhotonTrackedTarget target = result.getBestTarget();
+    return PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), aprilTagFieldLayout.getTagPose(target.getFiducialId()).get(), cameraToRobot3d);
+}
 
     public void report() {
         SmartDashboard.putString("Pipeline", getVisionState());
