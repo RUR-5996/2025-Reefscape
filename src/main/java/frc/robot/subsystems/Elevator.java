@@ -191,22 +191,23 @@ public class Elevator extends SubsystemBase {
         } return 0; //wanted down or invalid floor inputed
     }
 
-    private double getMotorRotations(double height_requested_m_L) { //enter double of elevator extension in mm, returns number of windings of the motor required to achieve that
-        double thickness_in_mm_h = 0.0025;
-        double inner_diam_in_m_D0 = 0.024;
-        double max_height = 1.6;
+    private static double getMotorRotations(double height_requested_m) { //enter double of elevator extension in m, returns number of windings of the motor required to achieve that
+
+        double thickness_in_mm = 0.0025;
+        double inner_diam_in_m = 0.024;
+        double max_height_in_m = 1.6;
         double max_windings = 12;
-        double requested_height_fraction = height_requested_m_L/max_height;
+        double requested_height_fraction = height_requested_m/max_height_in_m;
         if (requested_height_fraction > 1) {
             requested_height_fraction = 1;
         }
-
-        double requested_motor_rotation = Math.abs((thickness_in_mm_h - inner_diam_in_m_D0 + Math.sqrt((Math.pow(inner_diam_in_m_D0 - thickness_in_mm_h, 2) + ((4*thickness_in_mm_h*height_requested_m_L) / (Math.PI))))) / (2*thickness_in_mm_h));
-
+    
+        double requested_motor_rotation = Math.abs((thickness_in_mm - inner_diam_in_m + Math.sqrt((Math.pow(inner_diam_in_m - thickness_in_mm, 2) + ((4*thickness_in_mm*height_requested_m) / (Math.PI))))) / (2*thickness_in_mm));
+    
         if (requested_motor_rotation > max_windings) {
             requested_motor_rotation = max_windings;
         }
-
+    
         return requested_motor_rotation * 5; //5 kvuli prevodovce
     }
 
