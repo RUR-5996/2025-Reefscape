@@ -12,6 +12,10 @@ import frc.robot.Constants;
 
 public class Pathplanning {
 
+    public static Pose2d tagIDToPose(Integer TagID) {
+        return Constants.PathplanningConstants.aprilTagPoseMap.get(TagID);
+    }
+    
     public static PathPlannerPath getPath(Pose2d start, Integer tagID) {
         return getPath(start, Constants.PathplanningConstants.aprilTagPoseMap.get(tagID));
     }
@@ -20,7 +24,7 @@ public class Pathplanning {
         Pose2d end = Constants.PathplanningConstants.aprilTagPoseMap.get(tagID);
         double x = end.getX();
         double y = end.getY();
-        double angle = end.getRotation().getDegrees();
+        double angle = end.getRotation().getDegrees() % 360;
         double offset = Constants.PathplanningConstants.reefOffset;
         Integer modifier = 1;
         if (offsetDirection.toLowerCase() == "right") {
