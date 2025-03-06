@@ -108,6 +108,13 @@ public final class Constants {
     public static double limelightFOVHor = 1.090831;
 }
 
+public static class IntakeConstants { // angles in rad
+    public static double EXTENSION_IN = 0; // TODO add CAD measurements
+    public static double EXTENSION_OUT = 2.35619;
+    public static double EXTENSION_MID = -0.174533;
+    public static double TILT_MOTOR_COEFFICIENT = 18; // 1/20 * 360?
+  }
+
   public static class PathplanningConstants {
   public static Map<Integer, Pose2d> aprilTagPoseMap = Map.ofEntries(//coords in m, angle in deg  NOT positions of tag, but where should robot go
     Map.entry(1, new Pose2d(16.250, 1.000, Rotation2d.fromDegrees(320.0))), //field len 17.55 m

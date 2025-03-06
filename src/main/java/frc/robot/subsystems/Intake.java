@@ -9,37 +9,38 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.PneumaticsControlModule;
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
-import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 
 
 public class Intake extends SubsystemBase {
 
-    SparkMax intakeMotor;
-    RelativeEncoder intakeEncoder;
-    SparkClosedLoopController intakeController;
+    // for grabbing coral
+    SparkMax grabMotor;
+    RelativeEncoder grabEncoder;
+    SparkClosedLoopController grabController;
 
-    DoubleSolenoid intakeSolenoid;
-    PneumaticsControlModule intakeModule;
+    // for moving intake
+    SparkMax tiltMotor;
+    RelativeEncoder tiltEncoder;
+    SparkClosedLoopController tiltController;
 
     IntakeState intakeState = IntakeState.EMPTY;
-    SolenoidState solenoidState = SolenoidState.FORWARD;
     PassiveIntake passiveIntakePrio = PassiveIntake.IN;
-
+    IntakePosition intakePosition = IntakePosition.IN;
 
 
     public Intake() {}; //for testing
 
-    public Intake(int motorId, int frontPiston, int backPiston) {
-        intakeMotor = new SparkMax(motorId, MotorType.kBrushless);
+    public Intake(int grabId, int tiltId) {
+        grabMotor = new SparkMax(grabId, MotorType.kBrushless);
+        tiltMotor = new SparkMax(tiltId, MotorType.kBrushless);
 
-        SparkMaxConfig intakeConfig = new SparkMaxConfig();
+        SparkMaxConfig intakeConfig = new SparkMaxConfig(); // config for grab motor, TODO add for tilt
         intakeConfig
             .inverted(false)
             .idleMode(IdleMode.kBrake);
@@ -48,16 +49,18 @@ public class Intake extends SubsystemBase {
             .i(0.0)
             .d(0.0)
             .positionWrappingEnabled(true);
-        intakeMotor.configure(intakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-        intakeEncoder = intakeMotor.getEncoder();
-        intakeController = intakeMotor.getClosedLoopController();
-        intakeEncoder.setPosition(0);
+        grabMotor.configure(intakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        grabEncoder = grabMotor.getEncoder();
+        grabController = grabMotor.getClosedLoopController();
+        grabEncoder.setPosition(0);
 
-        intakeModule = new PneumaticsControlModule(0);
+        intakeConfig.encoder.positionConversionFactor(Constants.IntakeConstants.TILT_MOTOR_COEFFICIENT); // temporary TODO
+        tiltMotor.configure(intakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+        tiltEncoder = tiltMotor.getEncoder();
+        tiltController = tiltMotor.getClosedLoopController();
+        tiltEncoder.setPosition(0);
 
-        intakeSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
-        intakeSolenoid.set(DoubleSolenoid.Value.kForward);
 
         SmartDashboard.putBoolean("Passive intake out", false);
     }
@@ -71,30 +74,50 @@ public class Intake extends SubsystemBase {
         }
         }
 
-    public Command toggleSolenoid() {
-        return Commands.runOnce(() -> {
-            if (solenoidState == SolenoidState.FORWARD) {
-                intakeSolenoid.set(Value.kReverse);
-                solenoidState = SolenoidState.REVERSE;
-            } else {
-                intakeSolenoid.set(Value.kForward);
-                solenoidState = SolenoidState.FORWARD;
-            }
+    public Command intakeMid() {
+        return Commands.runOnce(()-> {
+            tiltController.setReference(Constants.IntakeConstants.EXTENSION_MID, SparkMax.ControlType.kPosition);
+            intakePosition = IntakePosition.MID;
         });
     }
 
-    public Command intake() {
-        return Commands.run(() -> {
-            intakeMotor.set(.5);
+    public Command intakeOut() {
+        return Commands.runOnce(()-> {
+            tiltController.setReference(Constants.IntakeConstants.EXTENSION_OUT, SparkMax.ControlType.kPosition);
+            intakePosition = IntakePosition.OUT;
         });
     }
+
+    public Command intakeIn() {
+        return Commands.runOnce(()-> {
+            tiltController.setReference(Constants.IntakeConstants.EXTENSION_IN, SparkMax.ControlType.kPosition);
+            intakePosition = IntakePosition.IN;
+        });
+    }
+
+    public Command grabCoral() {
+        return Commands.run(() -> {
+            grabMotor.set(.5);
+            intakeState = IntakeState.FULL;
+        });
+    }
+
+    public Command releaseCoral() {
+        return Commands.run(() -> {
+            grabMotor.set(-.5);
+            intakeState = IntakeState.EMPTY;
+        });
+    }
+
 
     public String getIntakeState() {
         return intakeState.toString();
     }
 
-    public String getSolenoidState() {
-        return solenoidState.toString();
+    private enum IntakePosition {
+        IN,
+        OUT,
+        MID, // not out, but elevator can pass
     }
 
     private enum PassiveIntake {
@@ -109,9 +132,5 @@ public class Intake extends SubsystemBase {
         ERROR,
     }
 
-    private enum SolenoidState {
-        FORWARD,
-        REVERSE,
-        ERROR,
-    }
+
 }
