@@ -15,7 +15,7 @@ import frc.robot.util.ScoringTracker;
 
 public class Robot extends TimedRobot{
   public static Command m_autonomousCommand;
-
+  ScoringTracker scoringTracker;
   RobotContainer m_robotContainer;
   Report REPORT;
   DriveTrain DRIVETRAIN;
@@ -23,7 +23,7 @@ public class Robot extends TimedRobot{
 
   @Override
   public void robotInit() {
-    ScoringTracker scoringTracker = new ScoringTracker();
+    scoringTracker = new ScoringTracker();
     m_robotContainer = new RobotContainer();
     REPORT = Report.getInstance();
     DRIVETRAIN = DriveTrain.getInstance();

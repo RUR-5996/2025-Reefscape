@@ -24,6 +24,15 @@ public final class Elastic {
       selectedTabTopic.publish(PubSubOption.keepDuplicates(true));
   private static final ObjectMapper objectMapper = new ObjectMapper();
 
+  private static final StringTopic startPositionTopic =
+      NetworkTableInstance.getDefault().getStringTopic("/Elastic/StartPosition");
+  private static final StringPublisher startPositionPublisher =
+      startPositionTopic.publish(PubSubOption.keepDuplicates(true));
+  private static final StringTopic coralPositionTopic =
+      NetworkTableInstance.getDefault().getStringTopic("/Elastic/CoralPosition");
+  private static final StringPublisher coralPositionPublisher =
+      coralPositionTopic.publish(PubSubOption.keepDuplicates(true));
+
   /**
    * Sends an notification to the Elastic dashboard. The notification is serialized as a JSON string
    * before being published.
@@ -59,6 +68,14 @@ public final class Elastic {
    */
   public static void selectTab(int tabIndex) {
     selectTab(Integer.toString(tabIndex));
+  }
+
+  public static void setStartPosition(String position) {
+    startPositionPublisher.set(position);
+  }
+
+  public static void setCoralPosition(String position) {
+    coralPositionPublisher.set(position);
   }
 
   /**

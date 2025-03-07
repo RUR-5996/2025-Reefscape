@@ -1,9 +1,12 @@
 package frc.robot.util;
 
 import java.lang.Math;
+import java.util.List;
 
 import com.pathplanner.lib.path.GoalEndState;
+import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
+import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -91,5 +94,25 @@ public class Pathplanning {
             return 0;
         }
     }
+    Pose2d StartPoseLeft = new Pose2d(7, 5.850, Rotation2d.fromDegrees(0));
+    Pose2d StartPoseRight = new Pose2d(7, 2.200, Rotation2d.fromDegrees(0));
+    Pose2d FirstDeployLeft = new Pose2d(5.2, 5.15, Rotation2d.fromDegrees(-120));
+    Pose2d FirstDeployRight = new Pose2d(3.85, 2.9, Rotation2d.fromDegrees(60));
+    Pose2d LoadingLeft = new Pose2d(1.4, 7.3, Rotation2d.fromDegrees(60));
+    Pose2d LoadingRight = new Pose2d(1.4, 0.8, Rotation2d.fromDegrees(-120));
+
+
+
+    List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
+        //load poses above
+    );
+    PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0);
+
+    PathPlannerPath path = new PathPlannerPath(
+        waypoints,
+        constraints,
+        null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
+        new GoalEndState(0.0, Rotation2d.fromDegrees(-90)) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
+    );
 
 }
