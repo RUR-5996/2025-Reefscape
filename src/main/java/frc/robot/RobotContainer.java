@@ -8,14 +8,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
-import frc.robot.subsystems.DriveTrain;
-import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.LimeLight;
-import frc.robot.subsystems.Pneumatics;
-import frc.robot.subsystems.SwerveDrive;
-import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.*;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
@@ -40,6 +33,7 @@ public class RobotContainer {
           RobotConfig config;
           public Pneumatics PNEUMATICS;
           public Vision VISION;
+          public Climber CLIMBER;
 
 
     public RobotContainer() {
@@ -50,6 +44,7 @@ public class RobotContainer {
             VISION = Vision.getInstance();
             LEFT_INTAKE = new Intake(50, 51);
             RIGHT_INTAKE = new Intake(52,53);
+            CLIMBER = Climber.getInstance();
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
 
@@ -94,7 +89,7 @@ public class RobotContainer {
         // xBox.b().onTrue(VISION.object());
 
           xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manualy set height
-
+          xBox.y().onTrue(Commands.either(CLIMBER.climb(), CLIMBER.out(), () -> (CLIMBER.state == Climber.ClimberState.OUT)));
       }
 
       private void loadPaths() {

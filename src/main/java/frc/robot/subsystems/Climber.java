@@ -1,38 +1,101 @@
 package frc.robot.subsystems;
 
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.SparkBaseConfig;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+
 
 public class Climber extends SubsystemBase {
 
-    ClimberState state = ClimberState.IDLE;
+    private static Climber CLIMBER;
 
-    public void init() {}
+    public ClimberState state = ClimberState.IDLE;
 
-    public ClimberState climb(ClimberState desiredState) {
-        if (state != ClimberState.IDLE) {
-            return ClimberState.ERROR;
-        }
-        if (desiredState == ClimberState.SHALLOW) {
-            //TODO climb
-        } else if (desiredState == ClimberState.DEEP) {
-            //TODO climb
-        }
-        return desiredState; //remove after method is done?
+    SparkMax climbMotor;
+    RelativeEncoder climbEncoder;
+    SparkClosedLoopController climbController;
+
+    DoubleSolenoid climbSolenoid;
+    PneumaticsControlModule climbModule;
+
+    public Climber() {
+        climbMotor = new SparkMax(55, SparkLowLevel.MotorType.kBrushless);
+
+        climbSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
+        climbModule = new PneumaticsControlModule(0);
+
+        SparkMaxConfig intakeConfig = new SparkMaxConfig(); // TODO fix values
+        intakeConfig
+                .inverted(false)
+                .idleMode(SparkBaseConfig.IdleMode.kBrake);
+        intakeConfig.closedLoop
+                .p(1.0)
+                .i(0.0)
+                .d(0.0)
+                .positionWrappingEnabled(true);
+
+        climbMotor.configure(intakeConfig, SparkBase.ResetMode.kNoResetSafeParameters, SparkBase.PersistMode.kPersistParameters);
+        climbEncoder = climbMotor.getEncoder();
+        climbController = climbMotor.getClosedLoopController();
+        climbEncoder.setPosition(0);
+
     }
+
+    public static Climber getInstance() {
+        if(CLIMBER == null) {
+            CLIMBER = new Climber();
+        }
+
+        return CLIMBER;
+    }
+
+
+    public Command out() {
+        return Commands.parallel(
+                Commands.runOnce(() -> {
+                    climbSolenoid.set(DoubleSolenoid.Value.kForward);
+                    state = ClimberState.OUT;
+                }),
+                Commands.run(() -> {
+                    climbMotor.set(0.5);
+                })
+        );
+    }
+
+    public Command climb() {
+        return Commands.parallel(
+                Commands.runOnce(() -> {
+                    climbSolenoid.set(Value.kReverse);
+                    state = ClimberState.CLIMB;
+                }),
+                Commands.run(() -> {
+                    climbMotor.set(-0.5);
+                })
+        );
+    }
+
 
     public String getClimberState() {
         return state.toString();
     }
 
-    public void Climb() {}
 
-    private enum ClimberState {
+    public enum ClimberState {
         IDLE,
-        SHALLOW,
-        DEEP,
+        OUT,
+        CLIMB,
         ERROR,
     }
 }
