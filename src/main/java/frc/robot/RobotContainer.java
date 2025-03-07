@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.StadiaController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -31,7 +32,8 @@ public class RobotContainer {
           static DigitalInput diginRightBasket2 = new DigitalInput(3);
 
           public Elevator ELEVATOR;
-          public Intake INTAKE;
+          public Intake LEFT_INTAKE;
+          public Intake RIGHT_INTAKE;
           public SwerveDrive SWERVE;
           public DriveTrain DRIVETRAIN;
           private LEDs LEDS;
@@ -39,13 +41,15 @@ public class RobotContainer {
           public Pneumatics PNEUMATICS;
           public Vision VISION;
 
-          public RobotContainer() {
+
+    public RobotContainer() {
             SWERVE = SwerveDrive.getInstance();
             DRIVETRAIN = DriveTrain.getInstance();
             LEDS = LEDs.getInstance();
             ELEVATOR = Elevator.getInstance();
             VISION = Vision.getInstance();
-            INTAKE = new Intake();
+            LEFT_INTAKE = new Intake(50, 51);
+            RIGHT_INTAKE = new Intake(52,53);
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
 
@@ -86,9 +90,10 @@ public class RobotContainer {
         // xBox.x().onTrue(ELEVATOR.elevate(frc.robot.subsystems.Elevator.ElevatorState.FLOOR2));
         // xBox.y().onTrue(ELEVATOR.elevate(frc.robot.subsystems.Elevator.ElevatorState.FLOOR3));
 
-        xBox.a().onTrue(VISION.april());
-        xBox.b().onTrue(VISION.object());
+        // xBox.a().onTrue(VISION.april());
+        // xBox.b().onTrue(VISION.object());
 
+          xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manualy set height
 
       }
 
@@ -129,7 +134,7 @@ public class RobotContainer {
         ELEVATOR.checkManual();
         ELEVATOR.report();
         VISION.object(true);
-        INTAKE.prioState();
+        LEFT_INTAKE.prioState();
       }
 
       /*public static void check_for_auto_change_periodic() {
