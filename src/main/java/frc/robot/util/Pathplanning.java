@@ -1,6 +1,7 @@
 package frc.robot.util;
-
 import java.lang.Math;
+import java.security.KeyStore.LoadStoreParameter;
+import java.util.ArrayList;
 import java.util.List;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -105,25 +106,41 @@ public class Pathplanning {
         return AutoBuilder.followPath(path);
     }
 
-    Pose2d StartPoseLeft = new Pose2d(7, 5.850, Rotation2d.fromDegrees(0));
-    Pose2d StartPoseRight = new Pose2d(7, 2.200, Rotation2d.fromDegrees(0));
-    Pose2d FirstDeployLeft = new Pose2d(5.2, 5.15, Rotation2d.fromDegrees(-120));
-    Pose2d FirstDeployRight = new Pose2d(3.85, 2.9, Rotation2d.fromDegrees(60));
-    Pose2d LoadingLeft = new Pose2d(1.4, 7.3, Rotation2d.fromDegrees(60));
-    Pose2d LoadingRight = new Pose2d(1.4, 0.8, Rotation2d.fromDegrees(-120));
+    public static Pose2d StartPoseLeft = new Pose2d(7, 5.850, Rotation2d.fromDegrees(0));
+    public static Pose2d StartPoseRight = new Pose2d(7, 2.200, Rotation2d.fromDegrees(0));
+    public static Pose2d FirstDeployLeft = new Pose2d(3.85, 5.15, Rotation2d.fromDegrees(-60));
+    public static Pose2d FirstDeployRight = new Pose2d(3.53, 3.13, Rotation2d.fromDegrees(60));
+    public static Pose2d SecondDeployLeft = new Pose2d(4.2, 5.35, Rotation2d.fromDegrees(-60));
+    public static Pose2d SecondDeployRight = new Pose2d(3.8, 3, Rotation2d.fromDegrees(60));
+    public static Pose2d ThirdDeployLeft = new Pose2d(5.2, 5.0, Rotation2d.fromDegrees(-120));
+    public static Pose2d ThirdDeployRight = new Pose2d(4.8, 2.7, Rotation2d.fromDegrees(120));
+    public static Pose2d FourthDeployLeft = new Pose2d(5.5, 4.9, Rotation2d.fromDegrees(-120));
+    public static Pose2d FourthDeployRight = new Pose2d(5, 2.9, Rotation2d.fromDegrees(120));
+    public static Pose2d LoadingLeft = new Pose2d(1.4, 7.3, Rotation2d.fromDegrees(120));
+    public static Pose2d LoadingRight = new Pose2d(1.4, 0.8, Rotation2d.fromDegrees(-120));
 
+    public static void loadAutoPath(boolean startingRight) {
+        List<Waypoint> waypoints;
+        if (true) {
+            waypoints = PathPlannerPath.waypointsFromPoses(
+                StartPoseRight,
+                FirstDeployRight,
+                LoadingRight,
+                SecondDeployRight,
+                LoadingRight,
+                ThirdDeployRight,
+                LoadingRight,
+                FourthDeployRight
+            );
+        }
+        PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0);
 
-
-    List<Waypoint> waypoints = PathPlannerPath.waypointsFromPoses(
-        //load poses above
-    );
-    PathConstraints constraints = PathConstraints.unlimitedConstraints(12.0);
-
-    PathPlannerPath path = new PathPlannerPath(
-        waypoints,
-        constraints,
-        null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
-        new GoalEndState(0.0, Rotation2d.fromDegrees(-90)) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
-    );
-
+        PathPlannerPath path = new PathPlannerPath(
+            waypoints,
+            constraints,
+            null, // The ideal starting state, this is only relevant for pre-planned paths, so can be null for on-the-fly paths.
+            new GoalEndState(0.0, Rotation2d.fromDegrees(0)) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
+        );
+        return;
+    }
 }
