@@ -74,7 +74,7 @@ public class Intake extends SubsystemBase {
         }
         }
 
-    public Command intakeMid() {
+    public  Command intakeMid() {
         return Commands.runOnce(()-> {
             tiltController.setReference(Constants.IntakeConstants.EXTENSION_MID, SparkMax.ControlType.kPosition);
             intakePosition = IntakePosition.MID;
@@ -114,7 +114,7 @@ public class Intake extends SubsystemBase {
         return intakeState.toString();
     }
 
-    private enum IntakePosition {
+    public enum IntakePosition {
         IN,
         OUT,
         MID, // not out, but elevator can pass
