@@ -10,11 +10,8 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
-import frc.robot.util.Report;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -28,7 +25,7 @@ public class Elevator extends SubsystemBase {
     private static Elevator ELEVATOR;
 
     ElevatorState state = ElevatorState.DOWN;
-    ElevatorState manual = ElevatorState.DOWN;
+    public ElevatorState manual = ElevatorState.DOWN;
 
 
     public RelativeEncoder leftEncoder;
@@ -92,15 +89,15 @@ public class Elevator extends SubsystemBase {
     public Command checkElevator(ElevatorState target, Intake left, Intake right) { // takes intake instance
         return Commands.either(
                 Commands.parallel(
-                        Commands.either(left.intakeMid().andThen(elevate(target, true)), Commands.none(), () -> (left.intakePosition == Intake.IntakePosition.IN)),
-                        Commands.either(right.intakeMid().andThen(elevate(target, true)), Commands.none(), () -> (right.intakePosition == Intake.IntakePosition.IN)))
-                .andThen(elevate(target, true)),
-                elevate(target, true),
+                        Commands.either(left.intakeMid().andThen(elevate(target)), Commands.none(), () -> (left.intakePosition == Intake.IntakePosition.IN)),
+                        Commands.either(right.intakeMid().andThen(elevate(target)), Commands.none(), () -> (right.intakePosition == Intake.IntakePosition.IN)))
+                .andThen(elevate(target)),
+                elevate(target),
                 () -> (state == ElevatorState.DOWN || state == ElevatorState.FLOOR0)
         );
     }
 
-    public Command elevate(ElevatorState floor, boolean nic) { //TODO smazat void a bool
+    public Command elevate(ElevatorState floor) { //TODO smazat void a bool
         return Commands.runOnce(() -> {
             //double rotations = getMotorRotations((floorToMm(floor)-frc.robot.Constants.ElevatorConstants.DOWN));
             double rotations = getStateRotations(floor);
@@ -110,8 +107,9 @@ public class Elevator extends SubsystemBase {
             SmartDashboard.putNumber("rotations", rotations);
         });
     }
-    
-    public void elevate(ElevatorState floor) { //takes target floor
+
+
+    public void elevate(ElevatorState floor, boolean nic) { //takes target floor
         //double rotations = getStateRotations(floor);
         double rotations = (getMotorRotations(floorToDownMM(floor))); //TODO fix mezifloor travel
         SmartDashboard.putNumber("Target rotations", getStateRotations(floor));
@@ -129,12 +127,21 @@ public class Elevator extends SubsystemBase {
     }
 
     public void checkManual() {
-        for (ElevatorState f : ElevatorState.values()){
-            if ((SmartDashboard.getBoolean(f.toString(), false)) && (!(f==manual))){
-                SmartDashboard.putBoolean(manual.toString(), false);
-                manual = f;    
-                elevate(f);
-            }
+        if (SmartDashboard.getBoolean(ElevatorState.DOWN.toString(), false) && !(ElevatorState.DOWN == manual)) {
+            SmartDashboard.putBoolean(manual.toString(), false);
+            manual = ElevatorState.DOWN;
+        } else if (SmartDashboard.getBoolean(ElevatorState.FLOOR0.toString(), false) && !(ElevatorState.FLOOR0 == manual)) {
+            SmartDashboard.putBoolean(manual.toString(), false);
+            manual = ElevatorState.FLOOR0;
+        } else if (SmartDashboard.getBoolean(ElevatorState.FLOOR1.toString(), false) && !(ElevatorState.FLOOR1 == manual)) {
+            SmartDashboard.putBoolean(manual.toString(), false);
+            manual = ElevatorState.FLOOR1;
+        } else if (SmartDashboard.getBoolean(ElevatorState.FLOOR2.toString(), false) && !(ElevatorState.FLOOR2 == manual)) {
+            SmartDashboard.putBoolean(manual.toString(), false);
+            manual = ElevatorState.FLOOR2;
+        } else if (SmartDashboard.getBoolean(ElevatorState.FLOOR3.toString(), false) && !(ElevatorState.FLOOR3 == manual)) {
+            SmartDashboard.putBoolean(manual.toString(), false);
+            manual = ElevatorState.FLOOR3;
         }
     }
 
