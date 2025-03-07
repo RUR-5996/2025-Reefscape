@@ -10,6 +10,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants;
@@ -85,6 +86,18 @@ public class Elevator extends SubsystemBase {
         }
 
         return ELEVATOR;
+    }
+
+
+    public Command checkElevator(ElevatorState target, Intake left, Intake right) { // takes intake instance
+        return Commands.either(
+                Commands.parallel(
+                        Commands.either(left.intakeMid().andThen(elevate(target, true)), Commands.none(), () -> (left.intakePosition == Intake.IntakePosition.IN)),
+                        Commands.either(right.intakeMid().andThen(elevate(target, true)), Commands.none(), () -> (right.intakePosition == Intake.IntakePosition.IN)))
+                .andThen(elevate(target, true)),
+                elevate(target, true),
+                () -> (state == ElevatorState.DOWN || state == ElevatorState.FLOOR0)
+        );
     }
 
     public Command elevate(ElevatorState floor, boolean nic) { //TODO smazat void a bool
