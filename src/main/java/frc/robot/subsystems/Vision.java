@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.util.Pathplanning;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -158,7 +159,17 @@ public Pose3d getRobotPose() {
 
     }
 
-
+    public Command seeAprilAndGo() {
+        Pose2d robotPose = getRobotPose().toPose2d();
+        var result = camera.getLatestResult();
+        PhotonTrackedTarget target = result.getBestTarget();
+        int tagID = target.getFiducialId();
+        if ((tagID >= 6 && tagID <= 11) || (tagID >= 17 && tagID <= 22)) { //check if tag on reef
+            return Pathplanning.getPathCommand(robotPose, tagID);
+        } else {
+            return Commands.runOnce(() -> {});  //else return empty command
+        }
+}
     public String getVisionState() {
         return state.toString();
     }

@@ -9,11 +9,14 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
+import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 
 
@@ -33,12 +36,17 @@ public class Intake extends SubsystemBase {
     PassiveIntake passiveIntakePrio = PassiveIntake.IN;
     IntakePosition intakePosition = IntakePosition.IN;
 
+    DigitalInput frontButton;
+    DigitalInput backButton;
 
     public Intake() {}; //for testing
 
     public Intake(int grabId, int tiltId) {
         grabMotor = new SparkMax(grabId, MotorType.kBrushless);
         tiltMotor = new SparkMax(tiltId, MotorType.kBrushless);
+
+        frontButton = new DigitalInput(0); //TOOD: change to correct port number (both)
+        backButton = new DigitalInput(1);
 
         SparkMaxConfig intakeConfig = new SparkMaxConfig(); // config for grab motor, TODO add for tilt
         intakeConfig
@@ -72,8 +80,19 @@ public class Intake extends SubsystemBase {
         else if (SmartDashboard.getBoolean("Passive intake out", true) & passiveIntakePrio == PassiveIntake.OUT){
             passiveIntakePrio = PassiveIntake.IN;
         }
-        }
+    }
 
+    public SequentialCommandGroup grabCoralSequence() {
+        return new SequentialCommandGroup(
+            intakeOut(), grabCoral()
+        );
+    }
+
+    public SequentialCommandGroup releaseCoralSequence() {
+        return new SequentialCommandGroup(
+           stopGrab(), intakeIn(), releaseCoral(), new WaitCommand(.5), stopRelease()
+        );
+    }
     public  Command intakeMid() {
         return Commands.runOnce(()-> {
             tiltController.setReference(Constants.IntakeConstants.EXTENSION_MID, SparkMax.ControlType.kPosition);
@@ -94,11 +113,31 @@ public class Intake extends SubsystemBase {
             intakePosition = IntakePosition.IN;
         });
     }
+    
+    public Command stopGrab() {
+        return Commands.runOnce(()-> {
+            grabMotor.set(0);
+            CommandScheduler.getInstance().cancel(grabCoral());
+        });
+    }
+
+    public Command stopRelease() {
+        return Commands.runOnce(()-> {
+            grabMotor.set(0);
+            CommandScheduler.getInstance().cancel(releaseCoral());
+        });
+    }
 
     public Command grabCoral() {
         return Commands.run(() -> {
             grabMotor.set(.5);
             intakeState = IntakeState.FULL;
+            while (true) {
+                if (backButton.get() == true) {
+                    grabMotor.set(0);
+                    break;
+                }
+            }
         });
     }
 

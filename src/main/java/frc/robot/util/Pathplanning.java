@@ -3,6 +3,7 @@ package frc.robot.util;
 import java.lang.Math;
 import java.util.List;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.GoalEndState;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
@@ -10,6 +11,7 @@ import com.pathplanner.lib.path.Waypoint;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.wpilibj2.command.Command;
 
 import frc.robot.Constants;
 
@@ -94,6 +96,15 @@ public class Pathplanning {
             return 0;
         }
     }
+
+    public static Command getPathCommand(Pose2d start, Integer tagID) {
+        return AutoBuilder.followPath(getPath(start, tagID));
+    }
+
+    public static Command getPathCommand(PathPlannerPath path) {
+        return AutoBuilder.followPath(path);
+    }
+
     Pose2d StartPoseLeft = new Pose2d(7, 5.850, Rotation2d.fromDegrees(0));
     Pose2d StartPoseRight = new Pose2d(7, 2.200, Rotation2d.fromDegrees(0));
     Pose2d FirstDeployLeft = new Pose2d(5.2, 5.15, Rotation2d.fromDegrees(-120));

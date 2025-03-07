@@ -90,6 +90,14 @@ public class RobotContainer {
 
           xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manualy set height
           xBox.y().onTrue(Commands.either(CLIMBER.climb(), CLIMBER.out(), () -> (CLIMBER.state == Climber.ClimberState.OUT)));
+
+          xBox.leftTrigger().onTrue(LEFT_INTAKE.grabCoralSequence());
+          xBox.rightTrigger().onTrue(RIGHT_INTAKE.grabCoralSequence());
+  
+          xBox.leftTrigger().onFalse(LEFT_INTAKE.releaseCoralSequence());
+          xBox.rightTrigger().onFalse(RIGHT_INTAKE.releaseCoralSequence());
+          
+          xBox.x().onTrue(VISION.seeAprilAndGo());
       }
 
       private void loadPaths() {
