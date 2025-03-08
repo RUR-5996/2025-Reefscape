@@ -35,9 +35,9 @@ public final class Constants {
     public static final double TICKSperTALONFX_Rotation = 2048;
     public static final double DRIVE_MOTOR_TICKSperREVOLUTION = DRIVE_MOTOR_GEARING * TICKSperTALONFX_Rotation;
     public static final double METERSperWHEEL_REVOLUTION = 2 * Math.PI * WHEEL_RADIUS_METERS;
-    public static final double METERSperROBOT_REVOLUTION = 2 * Math.PI 
+    public static final double METERSperROBOT_REVOLUTION = 2 * Math.PI
             * Math.hypot(TRACK_WIDTH, WHEEL_BASE_WIDTH);
-    public static final double MAX_SPEED_METERSperSECOND = DRIVE_FACTOR;        
+    public static final double MAX_SPEED_METERSperSECOND = DRIVE_FACTOR;
     public static final double MAX_SPEED_RADIANSperSECOND = MAX_SPEED_METERSperSECOND / METERSperROBOT_REVOLUTION
             * (2 * Math.PI);
     public static final double P_ROTATION_CONTROLLER = 0.055;
@@ -64,14 +64,14 @@ public final class Constants {
     public static final double RL_STEER_OFFSET = 0;
     public static final double RR_STEER_OFFSET = 0;
   }
-  
+
   public static class DriverConstants {
     public static final double CONTROLLER_DEBOUNCE_TIME = 0.2;
     public static final double DRIVE_GOVERNOR = 0.6;
     public static final double TURN_GOVERNOR = 0.6;
     public static final double PRECISION_RATIO = 0.2;
   }
-  
+
   public static final class AutoConstants { //TODO move to SwerveConstants
     public static final PPHolonomicDriveController autoConfig = new PPHolonomicDriveController(new PIDConstants(6.5
     , 0, 0), new PIDConstants(0.5, 0, 0));
@@ -140,5 +140,23 @@ public static class IntakeConstants { // angles in rad
     Map.entry(21, new Pose2d(5.762, 4.000, Rotation2d.fromDegrees(180.0))),
     Map.entry(22, new Pose2d(5.200, 2.900, Rotation2d.fromDegrees(120.0)))
 );
-public static double reefOffset = 0.330; //in m
-}}
+    public static double reefOffset = 0.330; //in m
+}
+
+public final class UIConstants {
+    public static final class StartPositionUI {
+        public static final String POSITION_KEY = "StartPosition";
+        public static final String[] POSITIONS = {"Left", "Center", "Right"};
+        public static final double SELECTOR_WIDTH = 150;
+        public static final double SELECTOR_HEIGHT = 40;
+    }
+
+    public static final class CoralPositionUI {
+        public static final String POSITION_KEY = "CoralPosition";
+        public static final String[] POSITIONS = {"None", "Amp", "Source", "Stage"};
+        public static final double SELECTOR_WIDTH = 150;
+        public static final double SELECTOR_HEIGHT = 40;
+    }
+}
+
+}

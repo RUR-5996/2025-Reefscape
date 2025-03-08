@@ -3,22 +3,22 @@ package frc.robot.ui;
 import edu.wpi.first.wpilibj.shuffleboard.Shuffleboard;
 import edu.wpi.first.wpilibj.shuffleboard.ShuffleboardTab;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import frc.robot.constants.UIConstants;
+import frc.robot.Constants;
 import frc.robot.util.Elastic;
 
 public class CoralPositionSelector {
     private final SendableChooser<String> positionChooser = new SendableChooser<>();
-    
+
     public CoralPositionSelector(String tabName) {
         ShuffleboardTab tab = Shuffleboard.getTab(tabName);
-        
-        for (String position : UIConstants.CoralPositionUI.POSITIONS) {
+
+        for (String position : Constants.UIConstants.CoralPositionUI.POSITIONS) {
             positionChooser.addOption(position, position);
         }
-        positionChooser.setDefaultOption(UIConstants.CoralPositionUI.POSITIONS[0], UIConstants.CoralPositionUI.POSITIONS[0]);
-        
-        tab.add(UIConstants.CoralPositionUI.POSITION_KEY, positionChooser)
-           .withSize((int)UIConstants.CoralPositionUI.SELECTOR_WIDTH, (int)UIConstants.CoralPositionUI.SELECTOR_HEIGHT)
+        positionChooser.setDefaultOption(Constants.UIConstants.CoralPositionUI.POSITIONS[0], Constants.UIConstants.CoralPositionUI.POSITIONS[0]);
+
+        tab.add(Constants.UIConstants.CoralPositionUI.POSITION_KEY, positionChooser)
+           .withSize((int)Constants.UIConstants.CoralPositionUI.SELECTOR_WIDTH, (int)Constants.UIConstants.CoralPositionUI.SELECTOR_HEIGHT)
            .withPosition(0, 1);
     }
 
