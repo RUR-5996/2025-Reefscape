@@ -10,14 +10,19 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 
 import com.revrobotics.spark.SparkMax;
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Elevator extends SubsystemBase {
@@ -33,15 +38,20 @@ public class Elevator extends SubsystemBase {
     public SparkMax leftMotor;
     public SparkMax rightMotor;
 
+    Talon coralMotor;
+    Solenoid coralSolenoid;
+
     PIDController backupController;
 
     SparkClosedLoopController leftController;
     SparkClosedLoopController rightController;
 
-
     public Elevator() {
         leftMotor = new SparkMax(5, MotorType.kBrushless);
         rightMotor = new SparkMax(6, MotorType.kBrushless);
+
+        coralMotor = new Talon(10);
+        coralSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, 0);
 
         SparkMaxConfig config = new SparkMaxConfig();
         config
@@ -59,11 +69,11 @@ public class Elevator extends SubsystemBase {
         config.inverted(true);
         rightMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-        leftEncoder = leftMotor.getEncoder(); 
+        leftEncoder = leftMotor.getEncoder();
         leftEncoder.setPosition(0);
         leftController = leftMotor.getClosedLoopController();
 
-        rightEncoder = rightMotor.getEncoder(); 
+        rightEncoder = rightMotor.getEncoder();
         rightEncoder.setPosition(0);
         rightController = rightMotor.getClosedLoopController();
 
@@ -166,7 +176,7 @@ public class Elevator extends SubsystemBase {
     public String getManual(){
         return manual.toString();
     }
- 
+
     public void setHeight() {
         leftController.setReference(getMotorRotations(500), ControlType.kPosition);
     }
@@ -221,13 +231,13 @@ public class Elevator extends SubsystemBase {
         if (requested_height_fraction > 1) {
             requested_height_fraction = 1;
         }
-    
+
         double requested_motor_rotation = Math.abs((thickness_in_mm - inner_diam_in_m + Math.sqrt((Math.pow(inner_diam_in_m - thickness_in_mm, 2) + ((4*thickness_in_mm*height_requested_m) / (Math.PI))))) / (2*thickness_in_mm));
-    
+
         if (requested_motor_rotation > max_windings) {
             requested_motor_rotation = max_windings;
         }
-    
+
         return requested_motor_rotation * 5; //5 kvuli prevodovce
     }
 
@@ -246,5 +256,23 @@ public class Elevator extends SubsystemBase {
             default:
                 return 0;
         }
+    }
+
+    public Command dropCoral() {
+        return Commands.runOnce(() -> {
+            coralSolenoid.set(false);
+            coralMotor.set(1);
+        });
+    }
+
+    public Command returnCoral() {
+        return Commands.runOnce(() -> {
+            coralSolenoid.set(true);
+            coralMotor.set(0);
+        });
+    }
+
+    public SequentialCommandGroup dropCoralAndReturn() {
+        return new SequentialCommandGroup(dropCoral(), new WaitCommand(1), returnCoral());
     }
 }

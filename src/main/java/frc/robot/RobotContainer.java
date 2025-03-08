@@ -1,7 +1,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.StadiaController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -88,7 +87,8 @@ public class RobotContainer {
         // xBox.a().onTrue(VISION.april());
         // xBox.b().onTrue(VISION.object());
 
-          xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manualy set height
+          xBox.a().onTrue(ELEVATOR.dropCoralAndReturn());
+          xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manually set height
           xBox.x().onTrue(VISION.seeAprilAndGo());
           xBox.y().onTrue(Commands.either(CLIMBER.climb(), CLIMBER.out(), () -> (CLIMBER.state == Climber.ClimberState.OUT)));
 
@@ -97,6 +97,7 @@ public class RobotContainer {
           xBox.leftTrigger().onFalse(LEFT_INTAKE.releaseCoralSequence());
           xBox.rightTrigger().onFalse(RIGHT_INTAKE.releaseCoralSequence());
 
+          xBox.povUp().onTrue(LEFT_INTAKE.intakeIn().alongWith(RIGHT_INTAKE.intakeIn()));
           xBox.povLeft().onTrue(VISION.reefMove("left"));
           xBox.povRight().onTrue(VISION.reefMove("right"));
       }
