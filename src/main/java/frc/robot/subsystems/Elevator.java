@@ -38,8 +38,6 @@ public class Elevator extends SubsystemBase {
     SparkClosedLoopController leftController;
     SparkClosedLoopController rightController;
 
-    public Integer desiredState = 3;
-
     public Elevator() {
         leftMotor = new SparkMax(5, MotorType.kBrushless);
         rightMotor = new SparkMax(6, MotorType.kBrushless);
@@ -97,7 +95,7 @@ public class Elevator extends SubsystemBase {
         );
     }
 
-    public Command elevate(ElevatorState floor) { //TODO smazat void a bool
+    private Command elevate(ElevatorState floor) { //TODO smazat void a bool
         return Commands.runOnce(() -> {
             //double rotations = getMotorRotations((floorToMm(floor)-frc.robot.Constants.ElevatorConstants.DOWN));
             double rotations = getStateRotations(floor);
@@ -177,7 +175,6 @@ public class Elevator extends SubsystemBase {
         FLOOR1,
         FLOOR2,
         FLOOR3,
-        ERROR,
     }
 
     public enum AlgaePrioState {
@@ -232,23 +229,6 @@ public class Elevator extends SubsystemBase {
         return requested_motor_rotation * 5; //5 kvuli prevodovce
     }
 
-    public ElevatorState toElevatorState(Integer floor) {
-        switch (floor) {
-            case -1:
-                return ElevatorState.DOWN;
-            case 0:
-                return ElevatorState.FLOOR0;
-            case 1:
-                return ElevatorState.FLOOR1;
-            case 2:
-                return ElevatorState.FLOOR2;
-            case 3:
-                return ElevatorState.FLOOR3;
-            default:
-                return ElevatorState.ERROR;
-        }
-    }
-
     double getStateRotations(ElevatorState state) {
         switch (state) {
             case DOWN:
@@ -268,16 +248,34 @@ public class Elevator extends SubsystemBase {
 
     public Command addToDesiredState() {
         return Commands.runOnce(() -> {
-            if (desiredState <= 3) {
-                desiredState += 1;
+            switch (manual) {
+                case DOWN:
+                    manual = ElevatorState.FLOOR0;
+                case FLOOR0:
+                    manual = ElevatorState.FLOOR1;
+                case FLOOR1:
+                    manual = ElevatorState.FLOOR2;
+                case FLOOR2:
+                    manual = ElevatorState.FLOOR3;
+                case FLOOR3:
+                    manual = ElevatorState.FLOOR3;
             }
         });
     }
 
     public Command subtractFromDesiredState() {
         return Commands.runOnce(() -> {
-            if (desiredState >= -1) {
-                desiredState -= 1;
+            switch (manual) {
+                case DOWN:
+                    manual = ElevatorState.DOWN;
+                case FLOOR0:
+                    manual = ElevatorState.DOWN;
+                case FLOOR1:
+                    manual = ElevatorState.FLOOR0;
+                case FLOOR2:
+                    manual = ElevatorState.FLOOR1;
+                case FLOOR3:
+                    manual = ElevatorState.FLOOR2;
             }
         });
     }
