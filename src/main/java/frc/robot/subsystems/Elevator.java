@@ -10,19 +10,14 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 
 import com.revrobotics.spark.SparkMax;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 
-import edu.wpi.first.wpilibj.PneumaticsModuleType;
-import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 public class Elevator extends SubsystemBase {
@@ -38,20 +33,16 @@ public class Elevator extends SubsystemBase {
     public SparkMax leftMotor;
     public SparkMax rightMotor;
 
-    Talon coralMotor;
-    Solenoid coralSolenoid;
-
     PIDController backupController;
 
     SparkClosedLoopController leftController;
     SparkClosedLoopController rightController;
 
+    public Integer desiredState = 3;
+
     public Elevator() {
         leftMotor = new SparkMax(5, MotorType.kBrushless);
         rightMotor = new SparkMax(6, MotorType.kBrushless);
-
-        coralMotor = new Talon(10);
-        coralSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, 0);
 
         SparkMaxConfig config = new SparkMaxConfig();
         config
@@ -88,10 +79,9 @@ public class Elevator extends SubsystemBase {
     }
 
     public static Elevator getInstance() {
-        if(ELEVATOR == null) {
+        if (ELEVATOR == null) {
             ELEVATOR = new Elevator();
         }
-
         return ELEVATOR;
     }
 
@@ -187,6 +177,7 @@ public class Elevator extends SubsystemBase {
         FLOOR1,
         FLOOR2,
         FLOOR3,
+        ERROR,
     }
 
     public enum AlgaePrioState {
@@ -241,6 +232,23 @@ public class Elevator extends SubsystemBase {
         return requested_motor_rotation * 5; //5 kvuli prevodovce
     }
 
+    public ElevatorState toElevatorState(Integer floor) {
+        switch (floor) {
+            case -1:
+                return ElevatorState.DOWN;
+            case 0:
+                return ElevatorState.FLOOR0;
+            case 1:
+                return ElevatorState.FLOOR1;
+            case 2:
+                return ElevatorState.FLOOR2;
+            case 3:
+                return ElevatorState.FLOOR3;
+            default:
+                return ElevatorState.ERROR;
+        }
+    }
+
     double getStateRotations(ElevatorState state) {
         switch (state) {
             case DOWN:
@@ -258,21 +266,19 @@ public class Elevator extends SubsystemBase {
         }
     }
 
-    public Command dropCoral() {
+    public Command addToDesiredState() {
         return Commands.runOnce(() -> {
-            coralSolenoid.set(false);
-            coralMotor.set(1);
+            if (desiredState <= 3) {
+                desiredState += 1;
+            }
         });
     }
 
-    public Command returnCoral() {
+    public Command subtractFromDesiredState() {
         return Commands.runOnce(() -> {
-            coralSolenoid.set(true);
-            coralMotor.set(0);
+            if (desiredState >= -1) {
+                desiredState -= 1;
+            }
         });
-    }
-
-    public SequentialCommandGroup dropCoralAndReturn() {
-        return new SequentialCommandGroup(dropCoral(), new WaitCommand(1), returnCoral());
     }
 }

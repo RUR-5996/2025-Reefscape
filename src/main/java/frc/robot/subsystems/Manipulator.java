@@ -1,41 +1,65 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+
+import edu.wpi.first.wpilibj.motorcontrol.Talon;
+import edu.wpi.first.wpilibj.Solenoid;
+
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
 public class Manipulator extends SubsystemBase {
 
-    ManipulatorState state = ManipulatorState.EMPTY;
+    private static Manipulator MANIPULATOR;
 
-    public void init() {}
+    ManipulatorState state = ManipulatorState.UP;
 
-    public ManipulatorState pickUp() {
-        if (state == ManipulatorState.FULL) {
-            return ManipulatorState.ERROR;
-        }
-        //TODO pick up
-        state = ManipulatorState.FULL;
-        return state;
+    Talon coralMotor;
+    Solenoid coralSolenoid;
+
+
+    public Manipulator() {
+        coralMotor = new Talon(10);
+        coralSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, 0);
     }
 
-    public ManipulatorState dropOff() {
-        if (state == ManipulatorState.EMPTY) {
-            return ManipulatorState.ERROR;
-        }
-        //TODO drop off
-        state = ManipulatorState.EMPTY;
-        return state;
+    public Command dropCoral() {
+        return Commands.runOnce(() -> {
+            coralSolenoid.set(false);
+            coralMotor.set(1);
+            state = ManipulatorState.DOWN;
+        });
+    }
+
+    public Command returnCoral() {
+        return Commands.runOnce(() -> {
+            coralSolenoid.set(true);
+            coralMotor.set(0);
+            state = ManipulatorState.UP;
+        });
+    }
+
+    public SequentialCommandGroup dropCoralAndReturn() {
+        return new SequentialCommandGroup(dropCoral(), new WaitCommand(1), returnCoral());
     }
 
     public String getManipualtorState() {
         return state.toString();
     }
 
+    public static Manipulator getInstance() {
+        if (MANIPULATOR == null) {
+            MANIPULATOR = new Manipulator();
+        }
+        return MANIPULATOR;
+    }
+
     private enum ManipulatorState {
-        EMPTY,
-        FULL,
+        UP,
+        DOWN,
         ERROR,
     }
 }
