@@ -84,14 +84,16 @@ public Pose3d getRobotPose() {
     }});
     }
 
-    public void april(boolean nic){
+    public int april(boolean nic) {
         state = VisionState.APRIL;
-        camera.setPipelineIndex(0); //set pipeline to apriltag
+        camera.setPipelineIndex(0); // set pipeline to apriltag
         var result = camera.getLatestResult();
         if (result.hasTargets()) {
             tag = result.getBestTarget();
             SmartDashboard.putNumber("TagID", (tag.getFiducialId()));
+            return tag.getFiducialId();
         }
+        return -1; // or any other value indicating no target found
     }
 
     public Command object() {

@@ -18,8 +18,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriverConstants;
 import frc.robot.Constants.SwerveConstants;
+import edu.wpi.first.math.geometry.Pose2d;
+
 
 public class SwerveDrive extends SubsystemBase{
 
@@ -126,6 +129,14 @@ public class SwerveDrive extends SubsystemBase{
     public void resetOdometry(Pose2d newPose) {
         m_odometry.resetPosition(newPose.getRotation(), DRIVETRAIN.getModulePositions(), newPose);
     }
+
+    public Command resetAtReef(Vision vision) {
+        return Commands.runOnce(() -> {
+            Pose2d newPose = Constants.PathplanningConstants.aprilTagPoseMap.get(vision.april(true));
+            m_odometry.resetPosition(newPose.getRotation(), DRIVETRAIN.getModulePositions(), newPose);
+        });
+    }
+
 
     public boolean getAtGoal() {
         return rotationController.atSetpoint();
