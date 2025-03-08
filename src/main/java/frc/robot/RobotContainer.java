@@ -100,9 +100,6 @@ public class RobotContainer {
           xBox.leftTrigger().onFalse(LEFT_INTAKE.releaseCoralSequence());
           xBox.rightTrigger().onFalse(RIGHT_INTAKE.releaseCoralSequence());
 
-          xBox.leftBumper().onTrue(ELEVATOR.subtractFromDesiredState());
-          xBox.rightBumper().onTrue(ELEVATOR.addToDesiredState());
-
           xBox.povUp().onTrue(LEFT_INTAKE.intakeIn().alongWith(RIGHT_INTAKE.intakeIn()));
           xBox.povLeft().onTrue(VISION.reefMove("left"));
           xBox.povRight().onTrue(VISION.reefMove("right"));

@@ -245,38 +245,4 @@ public class Elevator extends SubsystemBase {
                 return 0;
         }
     }
-
-    public Command addToDesiredState() {
-        return Commands.runOnce(() -> {
-            switch (manual) {
-                case DOWN:
-                    manual = ElevatorState.FLOOR0;
-                case FLOOR0:
-                    manual = ElevatorState.FLOOR1;
-                case FLOOR1:
-                    manual = ElevatorState.FLOOR2;
-                case FLOOR2:
-                    manual = ElevatorState.FLOOR3;
-                case FLOOR3:
-                    manual = ElevatorState.FLOOR3;
-            }
-        });
-    }
-
-    public Command subtractFromDesiredState() {
-        return Commands.runOnce(() -> {
-            switch (manual) {
-                case DOWN:
-                    manual = ElevatorState.DOWN;
-                case FLOOR0:
-                    manual = ElevatorState.DOWN;
-                case FLOOR1:
-                    manual = ElevatorState.FLOOR0;
-                case FLOOR2:
-                    manual = ElevatorState.FLOOR1;
-                case FLOOR3:
-                    manual = ElevatorState.FLOOR2;
-            }
-        });
-    }
 }
