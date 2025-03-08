@@ -104,7 +104,8 @@ public class RobotContainer {
           xBox.povLeft().onTrue(VISION.reefMove("left"));
           xBox.povRight().onTrue(VISION.reefMove("right"));
 
-          xBox.back().onTrue(SWERVE.resetAtReef(VISION)); // tbh idk which button this is
+          xBox.back().onTrue(SWERVE.resetAtReef(VISION)); //TODO check if this is the right button
+          xBox.start().onTrue(SWERVE.resetGyroAtReef(VISION));
       }
 
       private void loadPaths() {

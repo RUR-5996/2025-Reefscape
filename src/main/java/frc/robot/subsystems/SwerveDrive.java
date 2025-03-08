@@ -137,6 +137,12 @@ public class SwerveDrive extends SubsystemBase{
         });
     }
 
+    public Command resetGyroAtReef(Vision vision) {
+        return Commands.runOnce(() -> {
+            m_odometry.resetPosition(Constants.PathplanningConstants.aprilTagPoseMap.get(vision.april(true)).getRotation(), DRIVETRAIN.getModulePositions(), m_odometry.getEstimatedPosition());
+        });
+    }
+
 
     public boolean getAtGoal() {
         return rotationController.atSetpoint();
