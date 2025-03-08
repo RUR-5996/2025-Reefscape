@@ -38,6 +38,7 @@ public class Elevator extends SubsystemBase {
     SparkClosedLoopController leftController;
     SparkClosedLoopController rightController;
 
+    public Integer desiredState = 3;
 
     public Elevator() {
         leftMotor = new SparkMax(5, MotorType.kBrushless);
@@ -59,11 +60,11 @@ public class Elevator extends SubsystemBase {
         config.inverted(true);
         rightMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-        leftEncoder = leftMotor.getEncoder(); 
+        leftEncoder = leftMotor.getEncoder();
         leftEncoder.setPosition(0);
         leftController = leftMotor.getClosedLoopController();
 
-        rightEncoder = rightMotor.getEncoder(); 
+        rightEncoder = rightMotor.getEncoder();
         rightEncoder.setPosition(0);
         rightController = rightMotor.getClosedLoopController();
 
@@ -78,10 +79,9 @@ public class Elevator extends SubsystemBase {
     }
 
     public static Elevator getInstance() {
-        if(ELEVATOR == null) {
+        if (ELEVATOR == null) {
             ELEVATOR = new Elevator();
         }
-
         return ELEVATOR;
     }
 
@@ -166,7 +166,7 @@ public class Elevator extends SubsystemBase {
     public String getManual(){
         return manual.toString();
     }
- 
+
     public void setHeight() {
         leftController.setReference(getMotorRotations(500), ControlType.kPosition);
     }
@@ -177,6 +177,7 @@ public class Elevator extends SubsystemBase {
         FLOOR1,
         FLOOR2,
         FLOOR3,
+        ERROR,
     }
 
     public enum AlgaePrioState {
@@ -221,14 +222,31 @@ public class Elevator extends SubsystemBase {
         if (requested_height_fraction > 1) {
             requested_height_fraction = 1;
         }
-    
+
         double requested_motor_rotation = Math.abs((thickness_in_mm - inner_diam_in_m + Math.sqrt((Math.pow(inner_diam_in_m - thickness_in_mm, 2) + ((4*thickness_in_mm*height_requested_m) / (Math.PI))))) / (2*thickness_in_mm));
-    
+
         if (requested_motor_rotation > max_windings) {
             requested_motor_rotation = max_windings;
         }
-    
+
         return requested_motor_rotation * 5; //5 kvuli prevodovce
+    }
+
+    public ElevatorState toElevatorState(Integer floor) {
+        switch (floor) {
+            case -1:
+                return ElevatorState.DOWN;
+            case 0:
+                return ElevatorState.FLOOR0;
+            case 1:
+                return ElevatorState.FLOOR1;
+            case 2:
+                return ElevatorState.FLOOR2;
+            case 3:
+                return ElevatorState.FLOOR3;
+            default:
+                return ElevatorState.ERROR;
+        }
     }
 
     double getStateRotations(ElevatorState state) {
@@ -246,5 +264,21 @@ public class Elevator extends SubsystemBase {
             default:
                 return 0;
         }
+    }
+
+    public Command addToDesiredState() {
+        return Commands.runOnce(() -> {
+            if (desiredState <= 3) {
+                desiredState += 1;
+            }
+        });
+    }
+
+    public Command subtractFromDesiredState() {
+        return Commands.runOnce(() -> {
+            if (desiredState >= -1) {
+                desiredState -= 1;
+            }
+        });
     }
 }

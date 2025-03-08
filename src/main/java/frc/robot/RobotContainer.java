@@ -1,7 +1,6 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.StadiaController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -9,6 +8,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.subsystems.*;
+import frc.robot.subsystems.Elevator.ElevatorState;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
@@ -25,6 +25,7 @@ public class RobotContainer {
           static DigitalInput diginRightBasket2 = new DigitalInput(3);
 
           public Elevator ELEVATOR;
+          public Manipulator MANIPULATOR;
           public Intake LEFT_INTAKE;
           public Intake RIGHT_INTAKE;
           public SwerveDrive SWERVE;
@@ -41,9 +42,10 @@ public class RobotContainer {
             DRIVETRAIN = DriveTrain.getInstance();
             LEDS = LEDs.getInstance();
             ELEVATOR = Elevator.getInstance();
+            MANIPULATOR = Manipulator.getInstance();
             VISION = Vision.getInstance();
             LEFT_INTAKE = new Intake(50, 51);
-            RIGHT_INTAKE = new Intake(52,53);
+            RIGHT_INTAKE = new Intake(52, 53);
             CLIMBER = Climber.getInstance();
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
@@ -88,8 +90,9 @@ public class RobotContainer {
         // xBox.a().onTrue(VISION.april());
         // xBox.b().onTrue(VISION.object());
 
-          xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manualy set height
-          xBox.x().onTrue(VISION.seeAprilAndGo());
+          xBox.a().onTrue(MANIPULATOR.dropCoralAndReturn());
+          xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manually set height
+          xBox.x().onTrue(VISION.seeAprilAndGo().andThen(ELEVATOR.elevate(ELEVATOR.toElevatorState(ELEVATOR.desiredState))).andThen(MANIPULATOR.dropCoralAndReturn()));
           xBox.y().onTrue(Commands.either(CLIMBER.climb(), CLIMBER.out(), () -> (CLIMBER.state == Climber.ClimberState.OUT)));
 
           xBox.leftTrigger().onTrue(LEFT_INTAKE.grabCoralSequence());
@@ -97,6 +100,10 @@ public class RobotContainer {
           xBox.leftTrigger().onFalse(LEFT_INTAKE.releaseCoralSequence());
           xBox.rightTrigger().onFalse(RIGHT_INTAKE.releaseCoralSequence());
 
+          xBox.leftBumper().onTrue(ELEVATOR.subtractFromDesiredState());
+          xBox.rightBumper().onTrue(ELEVATOR.addToDesiredState());
+
+          xBox.povUp().onTrue(LEFT_INTAKE.intakeIn().alongWith(RIGHT_INTAKE.intakeIn()));
           xBox.povLeft().onTrue(VISION.reefMove("left"));
           xBox.povRight().onTrue(VISION.reefMove("right"));
 
