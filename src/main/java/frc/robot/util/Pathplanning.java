@@ -1,7 +1,5 @@
 package frc.robot.util;
 import java.lang.Math;
-import java.security.KeyStore.LoadStoreParameter;
-import java.util.ArrayList;
 import java.util.List;
 
 import com.pathplanner.lib.auto.AutoBuilder;
@@ -21,11 +19,11 @@ public class Pathplanning {
     public static Pose2d tagIDToPose(Integer TagID) {
         return Constants.PathplanningConstants.aprilTagPoseMap.get(TagID);
     }
-    
+
     public static PathPlannerPath getPath(Pose2d start, Integer tagID) {
         return getPath(start, Constants.PathplanningConstants.aprilTagPoseMap.get(tagID));
     }
-    
+
     public static PathPlannerPath getPath(Pose2d start, Integer tagID, String offsetDirection) { //offsetDirection can be to the "left" or to the "right"
         Pose2d end = Constants.PathplanningConstants.aprilTagPoseMap.get(tagID);
         double x = end.getX();
@@ -142,5 +140,16 @@ public class Pathplanning {
             new GoalEndState(0.0, Rotation2d.fromDegrees(0)) // Goal end state. You can set a holonomic rotation here. If using a differential drivetrain, the rotation will have no effect.
         );
         return;
+    }
+
+    public static Command getReefCommand(Integer startTagID, String direction) {
+        Integer endTagID;
+        if (direction.toLowerCase() == "left") {
+            endTagID = (int)getLeftTagID(startTagID);
+        } else {
+            endTagID = (int)getRightTagID(startTagID);
+        }
+        String autoName = startTagID.toString() + "-" + endTagID.toString();
+        return AutoBuilder.buildAuto(autoName);
     }
 }

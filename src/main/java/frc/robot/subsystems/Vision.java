@@ -79,7 +79,7 @@ public Pose3d getRobotPose() {
             state = VisionState.APRIL;
             camera.setPipelineIndex(0); //set pipeline to apriltag
             var result = camera.getLatestResult();
-            if (result.hasTargets()) { 
+            if (result.hasTargets()) {
                 tag = result.getBestTarget();
     }});
     }
@@ -88,7 +88,7 @@ public Pose3d getRobotPose() {
         state = VisionState.APRIL;
         camera.setPipelineIndex(0); //set pipeline to apriltag
         var result = camera.getLatestResult();
-        if (result.hasTargets()) { 
+        if (result.hasTargets()) {
             tag = result.getBestTarget();
             SmartDashboard.putNumber("TagID", (tag.getFiducialId()));
         }
@@ -97,7 +97,7 @@ public Pose3d getRobotPose() {
     public Command object() {
         return Commands.runOnce(() -> {
             state = VisionState.OBJECT;
-            camera.setPipelineIndex(1); //set pipeline to object 
+            camera.setPipelineIndex(1); //set pipeline to object
             var result = camera.getLatestResult();
             if (result.hasTargets()) {
                 tag = result.getBestTarget();
@@ -113,9 +113,9 @@ public Pose3d getRobotPose() {
         state = VisionState.OBJECT;
         camera.setPipelineIndex(1); //set pipeline to object
         var result = camera.getLatestResult();
-        if (result.hasTargets()) { 
+        if (result.hasTargets()) {
             tag = result.getBestTarget();
-            List<TargetCorner> corners = tag.getMinAreaRectCorners(); 
+            List<TargetCorner> corners = tag.getMinAreaRectCorners();
             // 0:bottom left, 1:bottom right, 2:top right, 3:top left
             SmartDashboard.putNumber("x corner 0", corners.get(0).x);
             SmartDashboard.putNumber("y corner 0", corners.get(0).y);
@@ -125,7 +125,7 @@ public Pose3d getRobotPose() {
             SmartDashboard.putNumber("y corner 2", corners.get(2).y);
             SmartDashboard.putNumber("x corner 3", corners.get(3).x);
             SmartDashboard.putNumber("y corner 3", corners.get(3).y);
-            } 
+            }
     }
 
     public static PhotonTrackedTarget simulateForLoop(int i, List<PhotonTrackedTarget> list) {
@@ -142,7 +142,7 @@ public Pose3d getRobotPose() {
             Pose3d targetPose = aprilTagFieldLayout.getTagPose(target.getFiducialId()).get();
             distanceToTarget = PhotonUtils.getDistanceToPose(robotPose.toPose2d(), targetPose.toPose2d());
         }
-        
+
         return distanceToTarget;
     }
 
@@ -177,6 +177,12 @@ public Pose3d getRobotPose() {
     private enum VisionState {
         APRIL,
         OBJECT,
+    }
+
+    public Command reefMove(String direction) {
+        var result = camera.getLatestResult();
+        PhotonTrackedTarget target = result.getBestTarget();
+        return Pathplanning.getReefCommand(target.getFiducialId(), direction);
     }
 
     public Command getPos() {
