@@ -24,8 +24,6 @@ public class Intake extends SubsystemBase {
 
     // for grabbing coral
     SparkMax grabMotor;
-    RelativeEncoder grabEncoder;
-    SparkClosedLoopController grabController;
 
     // for moving intake
     SparkMax tiltMotor;
@@ -60,9 +58,7 @@ public class Intake extends SubsystemBase {
             .positionWrappingEnabled(true);
 
         grabMotor.configure(intakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
-        grabEncoder = grabMotor.getEncoder();
-        grabController = grabMotor.getClosedLoopController();
-        grabEncoder.setPosition(0);
+
 
         intakeConfig.encoder.positionConversionFactor(Constants.IntakeConstants.TILT_MOTOR_COEFFICIENT); // temporary TODO
         tiltMotor.configure(intakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
@@ -159,6 +155,5 @@ public class Intake extends SubsystemBase {
     private enum IntakeState {
         EMPTY,
         FULL,
-        ERROR,
     }
 }

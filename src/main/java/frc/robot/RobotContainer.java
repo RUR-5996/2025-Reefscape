@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -40,15 +41,18 @@ public class RobotContainer {
         RobotConfig config;
 
     public RobotContainer() {
+            PneumaticsControlModule PCM = new PneumaticsControlModule(0);
+
             SWERVE = SwerveDrive.getInstance();
             DRIVETRAIN = DriveTrain.getInstance();
             LEDS = LEDs.getInstance();
             ELEVATOR = Elevator.getInstance();
             MANIPULATOR = Manipulator.getInstance();
             VISION = Vision.getInstance();
+            CLIMBER = Climber.getInstance(PCM);
+
             LEFT_INTAKE = new Intake(50, 51, 0, 1);
             RIGHT_INTAKE = new Intake(52, 53, 2, 3);
-            CLIMBER = Climber.getInstance();
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
 
@@ -78,10 +82,11 @@ public class RobotContainer {
           LEDS.setColour(((int)relativePosition[3] % 2 == 0) ? Constants.ColourConstants.FLASHBANG : Constants.ColourConstants.PINK);
         }));
 
+
           xBox.a().onTrue(MANIPULATOR.dropCoralAndReturn());
           xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manually set height
           xBox.x().onTrue(VISION.seeAprilAndGo().andThen(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)).andThen(MANIPULATOR.dropCoralAndReturn().andThen(LEFT_INTAKE.intakeMid()).alongWith(RIGHT_INTAKE.intakeMid()).andThen(ELEVATOR.goTo(ElevatorState.DOWN))));
-          xBox.y().onTrue(Commands.either(CLIMBER.climb(), CLIMBER.out(), () -> (CLIMBER.state == Climber.ClimberState.OUT)));
+          xBox.y().onTrue(Commands.either(CLIMBER.climb(), CLIMBER.out(Commands.sequence(ELEVATOR.checkElevator(Elevator.ElevatorState.DOWN, LEFT_INTAKE, RIGHT_INTAKE), Commands.parallel(LEFT_INTAKE.intakeMid(), RIGHT_INTAKE.intakeMid()))), () -> (CLIMBER.state == Climber.ClimberState.OUT)));
 
           xBox.leftTrigger().onTrue(LEFT_INTAKE.grabCoralSequence());
           xBox.rightTrigger().onTrue(RIGHT_INTAKE.grabCoralSequence());
