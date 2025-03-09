@@ -132,7 +132,7 @@ public class SwerveDrive extends SubsystemBase{
 
     public Command resetAtReef(Vision vision) {
         return Commands.runOnce(() -> {
-            Pose2d newPose = vision.getRobotPose();
+            Pose2d newPose = Constants.PathplanningConstants.aprilTagPoseMap.get(vision.april(true));
             m_odometry.resetPosition(newPose.getRotation(), DRIVETRAIN.getModulePositions(), newPose);
         });
     }

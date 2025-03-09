@@ -46,9 +46,10 @@ public class RobotContainer {
             ELEVATOR = Elevator.getInstance();
             MANIPULATOR = Manipulator.getInstance();
             VISION = Vision.getInstance();
+            CLIMBER = Climber.getInstance(PCM);
+
             LEFT_INTAKE = new Intake(50, 51, 0, 1);
             RIGHT_INTAKE = new Intake(52, 53, 2, 3);
-            CLIMBER = Climber.getInstance(PCM);
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
 
