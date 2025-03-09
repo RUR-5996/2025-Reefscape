@@ -7,6 +7,7 @@ import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import com.revrobotics.spark.config.ClosedLoopConfig.FeedbackSensor;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.DigitalInput;
@@ -38,8 +39,6 @@ public class Intake extends SubsystemBase {
 
     boolean isGrabOn = false;
 
-    public Intake() {}; //for testing
-
     public Intake(int grabId, int tiltId, int frontButtonID, int backButtonID) {
         grabMotor = new SparkMax(grabId, MotorType.kBrushless);
         tiltMotor = new SparkMax(tiltId, MotorType.kBrushless);
@@ -52,10 +51,13 @@ public class Intake extends SubsystemBase {
             .inverted(false)
             .idleMode(IdleMode.kBrake);
         intakeConfig.closedLoop
-            .p(1.0)
-            .i(0.0)
-            .d(0.0)
-            .positionWrappingEnabled(true);
+            .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+            .p(10)
+            .i(0)
+            .d(0)
+            .outputRange(-0.3, 0.3)
+            .positionWrappingEnabled(true)
+            .positionWrappingInputRange(-180, 180);
 
         grabMotor.configure(intakeConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 

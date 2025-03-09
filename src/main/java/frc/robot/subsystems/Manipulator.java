@@ -6,7 +6,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
-import edu.wpi.first.wpilibj.Solenoid;
+import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
@@ -16,13 +16,13 @@ public class Manipulator extends SubsystemBase {
 
     ManipulatorState state = ManipulatorState.UP;
 
-    Solenoid coralSolenoid;
+    DoubleSolenoid coralSolenoid;
 
     DigitalInput leftButton;
     DigitalInput rightButton;
 
     public Manipulator(int leftButtonID, int rightButtonID) {
-        coralSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, 0);
+        coralSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 2, 3);
 
         leftButton = new DigitalInput(leftButtonID);
         rightButton = new DigitalInput(rightButtonID);
@@ -30,14 +30,14 @@ public class Manipulator extends SubsystemBase {
 
     public Command dropCoral() {
         return Commands.runOnce(() -> {
-            coralSolenoid.set(false);
+            coralSolenoid.set(DoubleSolenoid.Value.kReverse);
             state = ManipulatorState.DOWN;
         });
     }
 
     public Command returnCoral() {
         return Commands.runOnce(() -> {
-            coralSolenoid.set(true);
+            coralSolenoid.set(DoubleSolenoid.Value.kForward);
             state = ManipulatorState.UP;
         });
     }
