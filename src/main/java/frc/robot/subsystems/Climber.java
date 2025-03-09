@@ -59,7 +59,6 @@ public class Climber extends SubsystemBase {
         if(CLIMBER == null) {
             CLIMBER = new Climber(pcm);
         }
-
         return CLIMBER;
     }
 
