@@ -57,7 +57,6 @@ public class Robot extends TimedRobot{
     } else {
       System.out.println("outonomous command null");
     }
-    m_robotContainer.CLIMBER.out(Commands.runOnce(() -> {}));
     LEDS.setColour(ColourConstants.PINK);
   }
 
@@ -71,7 +70,6 @@ public class Robot extends TimedRobot{
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-    m_robotContainer.CLIMBER.out(Commands.runOnce(() -> {}));
   }
 
   @Override
@@ -102,6 +100,17 @@ public class Robot extends TimedRobot{
     m_robotContainer.xBox.y().onFalse(m_robotContainer.ELEVATOR.stopTune());
     m_robotContainer.xBox.a().whileTrue(m_robotContainer.CLIMBER.tune());
     m_robotContainer.xBox.a().onFalse(m_robotContainer.CLIMBER.stopTune());
+    m_robotContainer.xBox.povUp().onTrue(m_robotContainer.MANIPULATOR.dropCoral());
+    m_robotContainer.xBox.povUp().onFalse(m_robotContainer.MANIPULATOR.returnCoral());
+
+    m_robotContainer.xBox.leftTrigger().onTrue(m_robotContainer.DRIVETRAIN.flTest());
+    m_robotContainer.xBox.rightTrigger().onTrue(m_robotContainer.DRIVETRAIN.frTest());
+    m_robotContainer.xBox.leftBumper().onTrue(m_robotContainer.DRIVETRAIN.rlTest());
+    m_robotContainer.xBox.rightBumper().onTrue(m_robotContainer.DRIVETRAIN.rrTest());
+    m_robotContainer.xBox.leftTrigger().onFalse(m_robotContainer.DRIVETRAIN.flTestStop());
+    m_robotContainer.xBox.rightTrigger().onFalse(m_robotContainer.DRIVETRAIN.frTestStop());
+    m_robotContainer.xBox.leftBumper().onFalse(m_robotContainer.DRIVETRAIN.rlTestStop());
+    m_robotContainer.xBox.rightBumper().onFalse(m_robotContainer.DRIVETRAIN.rrTestStop());
   }
 
   @Override

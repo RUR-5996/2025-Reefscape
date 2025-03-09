@@ -16,13 +16,15 @@ public class Manipulator extends SubsystemBase {
 
     ManipulatorState state = ManipulatorState.UP;
 
-    DoubleSolenoid coralSolenoid;
+    DoubleSolenoid leftManipulatorSolenoid;
+    DoubleSolenoid rightManipulatorSolenoid;
 
     DigitalInput leftButton;
     DigitalInput rightButton;
 
     public Manipulator(int leftButtonID, int rightButtonID) {
-        coralSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 2, 3);
+        leftManipulatorSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 2, 3);
+        rightManipulatorSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 4, 5);
 
         leftButton = new DigitalInput(leftButtonID);
         rightButton = new DigitalInput(rightButtonID);
@@ -30,14 +32,16 @@ public class Manipulator extends SubsystemBase {
 
     public Command dropCoral() {
         return Commands.runOnce(() -> {
-            coralSolenoid.set(DoubleSolenoid.Value.kReverse);
+            leftManipulatorSolenoid.set(DoubleSolenoid.Value.kReverse);
+            rightManipulatorSolenoid.set(DoubleSolenoid.Value.kReverse);
             state = ManipulatorState.DOWN;
         });
     }
 
     public Command returnCoral() {
         return Commands.runOnce(() -> {
-            coralSolenoid.set(DoubleSolenoid.Value.kForward);
+            leftManipulatorSolenoid.set(DoubleSolenoid.Value.kForward);
+            rightManipulatorSolenoid.set(DoubleSolenoid.Value.kForward);
             state = ManipulatorState.UP;
         });
     }
