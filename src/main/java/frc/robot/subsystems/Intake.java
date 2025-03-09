@@ -38,6 +38,8 @@ public class Intake extends SubsystemBase {
     DigitalInput frontButton;
     DigitalInput backButton;
 
+    boolean isGrabOn = false;
+
     public Intake() {}; //for testing
 
     public Intake(int grabId, int tiltId, int frontButtonID, int backButtonID) {
@@ -106,18 +108,23 @@ public class Intake extends SubsystemBase {
 
     public Command grabCoral() {
         return Commands.run(() -> {
+            isGrabOn = true;
             grabMotor.set(.5);
             intakeState = IntakeState.FULL;
             if (backButton.get() == true) {
                 grabMotor.set(0);
+                isGrabOn = false;
             }
         });
     }
 
     public Command stopGrab() {
-        return Commands.runOnce(()-> {
-            CommandScheduler.getInstance().cancel(grabCoral());
-            grabMotor.set(0);
+        return Commands.run(()-> {
+            if (frontButton.get() == true || backButton.get() == false) {
+                CommandScheduler.getInstance().cancel(grabCoral());
+                grabMotor.set(0);
+                isGrabOn = false;
+            }
         });
     }
 
@@ -139,6 +146,10 @@ public class Intake extends SubsystemBase {
         return intakeState.toString();
     }
 
+    public boolean getGrabState() {
+        return isGrabOn;
+    }
+
     public enum IntakePosition {
         IN,
         OUT,
@@ -150,6 +161,4 @@ public class Intake extends SubsystemBase {
         FULL,
         ERROR,
     }
-
-
 }

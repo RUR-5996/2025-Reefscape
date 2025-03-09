@@ -3,6 +3,7 @@ package frc.robot;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -12,7 +13,6 @@ import frc.robot.subsystems.Elevator.ElevatorState;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
-
 public class RobotContainer {
 
   private final CommandXboxController xBox = new CommandXboxController(0);
@@ -34,6 +34,9 @@ public class RobotContainer {
           public Climber CLIMBER;
           private LEDs LEDS;
 
+          private Trigger leftGrabMotor;
+          private Trigger rightGrabMotor;
+
         RobotConfig config;
 
     public RobotContainer() {
@@ -48,6 +51,9 @@ public class RobotContainer {
             CLIMBER = Climber.getInstance();
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
+
+            leftGrabMotor = new Trigger(LEFT_INTAKE::getGrabState);
+            rightGrabMotor = new Trigger(RIGHT_INTAKE::getGrabState);
 
             configureBindings();
 
@@ -79,8 +85,10 @@ public class RobotContainer {
 
           xBox.leftTrigger().onTrue(LEFT_INTAKE.grabCoralSequence());
           xBox.rightTrigger().onTrue(RIGHT_INTAKE.grabCoralSequence());
-          xBox.leftTrigger().onFalse(LEFT_INTAKE.releaseCoralSequence());
-          xBox.rightTrigger().onFalse(RIGHT_INTAKE.releaseCoralSequence());
+          xBox.leftTrigger().whileFalse(LEFT_INTAKE.stopGrab());
+          xBox.rightTrigger().whileFalse(RIGHT_INTAKE.stopGrab());
+          leftGrabMotor.onFalse(LEFT_INTAKE.releaseCoralSequence());
+          rightGrabMotor.onFalse(RIGHT_INTAKE.releaseCoralSequence());
 
           xBox.povUp().onTrue(LEFT_INTAKE.intakeIn().alongWith(RIGHT_INTAKE.intakeIn()));
           xBox.povLeft().onTrue(VISION.reefMove("left"));
