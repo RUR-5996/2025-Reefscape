@@ -6,9 +6,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import edu.wpi.first.wpilibj.Solenoid;
-
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
 public class Manipulator extends SubsystemBase {
@@ -17,19 +15,16 @@ public class Manipulator extends SubsystemBase {
 
     ManipulatorState state = ManipulatorState.UP;
 
-    Talon coralMotor;
     Solenoid coralSolenoid;
 
 
     public Manipulator() {
-        coralMotor = new Talon(10);
         coralSolenoid = new Solenoid(PneumaticsModuleType.CTREPCM, 0);
     }
 
     public Command dropCoral() {
         return Commands.runOnce(() -> {
             coralSolenoid.set(false);
-            coralMotor.set(1);
             state = ManipulatorState.DOWN;
         });
     }
@@ -37,7 +32,6 @@ public class Manipulator extends SubsystemBase {
     public Command returnCoral() {
         return Commands.runOnce(() -> {
             coralSolenoid.set(true);
-            coralMotor.set(0);
             state = ManipulatorState.UP;
         });
     }

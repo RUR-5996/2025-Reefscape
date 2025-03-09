@@ -30,12 +30,11 @@ public class RobotContainer {
           public Intake RIGHT_INTAKE;
           public SwerveDrive SWERVE;
           public DriveTrain DRIVETRAIN;
-          private LEDs LEDS;
-          RobotConfig config;
-          public Pneumatics PNEUMATICS;
           public Vision VISION;
           public Climber CLIMBER;
+          private LEDs LEDS;
 
+        RobotConfig config;
 
     public RobotContainer() {
             SWERVE = SwerveDrive.getInstance();
@@ -44,8 +43,8 @@ public class RobotContainer {
             ELEVATOR = Elevator.getInstance();
             MANIPULATOR = Manipulator.getInstance();
             VISION = Vision.getInstance();
-            LEFT_INTAKE = new Intake(50, 51);
-            RIGHT_INTAKE = new Intake(52, 53);
+            LEFT_INTAKE = new Intake(50, 51, 0, 1);
+            RIGHT_INTAKE = new Intake(52, 53, 2, 3);
             CLIMBER = Climber.getInstance();
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
@@ -64,8 +63,6 @@ public class RobotContainer {
       }
 
       private void configureBindings() {
-        //xBox.b().toggleOnTrue(SWERVE.toggleSlowMode());
-
         xBox.leftBumper().onTrue(Commands.runOnce(() -> {
           double[] relativePosition = LimeLight.getRelativePos();
           SmartDashboard.putNumber("Position tx", relativePosition[0]);
@@ -75,24 +72,9 @@ public class RobotContainer {
           LEDS.setColour(((int)relativePosition[3] % 2 == 0) ? Constants.ColourConstants.FLASHBANG : Constants.ColourConstants.PINK);
         }));
 
-        // xBox.a().onTrue(PNEUMATICS.leftIntake());
-        // xBox.x().onTrue(PNEUMATICS.rightIntake());
-        // xBox.y().onTrue(PNEUMATICS.Elevator1());
-        // xBox.rightBumper().onTrue(PNEUMATICS.Elevator2());
-        // xBox.leftBumper().onTrue(PNEUMATICS.Elevator3());
-        // xBox.x().onTrue(PNEUMATICS.toggleClimber());
-
-        // xBox.a().onTrue(ELEVATOR.elevate(frc.robot.subsystems.Elevator.ElevatorState.DOWN));
-        // xBox.b().onTrue(ELEVATOR.elevate(frc.robot.subsystems.Elevator.ElevatorState.FLOOR1));
-        // xBox.x().onTrue(ELEVATOR.elevate(frc.robot.subsystems.Elevator.ElevatorState.FLOOR2));
-        // xBox.y().onTrue(ELEVATOR.elevate(frc.robot.subsystems.Elevator.ElevatorState.FLOOR3));
-
-        // xBox.a().onTrue(VISION.april());
-        // xBox.b().onTrue(VISION.object());
-
           xBox.a().onTrue(MANIPULATOR.dropCoralAndReturn());
           xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manually set height
-          xBox.x().onTrue(VISION.seeAprilAndGo().andThen(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)).andThen(MANIPULATOR.dropCoralAndReturn()));
+          xBox.x().onTrue(VISION.seeAprilAndGo().andThen(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)).andThen(MANIPULATOR.dropCoralAndReturn().andThen(LEFT_INTAKE.intakeMid()).alongWith(RIGHT_INTAKE.intakeMid()).andThen(ELEVATOR.goTo(ElevatorState.DOWN))));
           xBox.y().onTrue(Commands.either(CLIMBER.climb(), CLIMBER.out(), () -> (CLIMBER.state == Climber.ClimberState.OUT)));
 
           xBox.leftTrigger().onTrue(LEFT_INTAKE.grabCoralSequence());
@@ -145,7 +127,6 @@ public class RobotContainer {
         ELEVATOR.checkManual();
         ELEVATOR.report();
         VISION.object(true);
-        LEFT_INTAKE.prioState();
       }
 
       /*public static void check_for_auto_change_periodic() {

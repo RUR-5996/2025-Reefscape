@@ -33,7 +33,6 @@ public class Intake extends SubsystemBase {
     SparkClosedLoopController tiltController;
 
     IntakeState intakeState = IntakeState.EMPTY;
-    PassiveIntake passiveIntakePrio = PassiveIntake.IN;
     IntakePosition intakePosition = IntakePosition.IN;
 
     DigitalInput frontButton;
@@ -41,12 +40,12 @@ public class Intake extends SubsystemBase {
 
     public Intake() {}; //for testing
 
-    public Intake(int grabId, int tiltId) {
+    public Intake(int grabId, int tiltId, int frontButtonID, int backButtonID) {
         grabMotor = new SparkMax(grabId, MotorType.kBrushless);
         tiltMotor = new SparkMax(tiltId, MotorType.kBrushless);
 
-        frontButton = new DigitalInput(0); //TOOD: change to correct port number (both)
-        backButton = new DigitalInput(1);
+        frontButton = new DigitalInput(frontButtonID);
+        backButton = new DigitalInput(backButtonID);
 
         SparkMaxConfig intakeConfig = new SparkMaxConfig(); // config for grab motor, TODO add for tilt
         intakeConfig
@@ -73,15 +72,6 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putBoolean("Passive intake out", false);
     }
 
-    public void prioState() {
-        if (SmartDashboard.getBoolean("Passive intake out", false) & passiveIntakePrio == PassiveIntake.IN) {
-            passiveIntakePrio = PassiveIntake.OUT;
-        }
-        else if (SmartDashboard.getBoolean("Passive intake out", true) & passiveIntakePrio == PassiveIntake.OUT){
-            passiveIntakePrio = PassiveIntake.IN;
-        }
-    }
-
     public SequentialCommandGroup grabCoralSequence() {
         return new SequentialCommandGroup(
             intakeOut(), grabCoral()
@@ -90,7 +80,7 @@ public class Intake extends SubsystemBase {
 
     public SequentialCommandGroup releaseCoralSequence() {
         return new SequentialCommandGroup(
-           stopGrab(), intakeIn(), releaseCoral(), new WaitCommand(.5), stopRelease()
+           stopGrab(), intakeIn(), releaseCoral(), new WaitCommand(.5), stopRelease(), intakeMid()
         );
     }
     public  Command intakeMid() {
@@ -113,41 +103,37 @@ public class Intake extends SubsystemBase {
             intakePosition = IntakePosition.IN;
         });
     }
-    
-    public Command stopGrab() {
-        return Commands.runOnce(()-> {
-            grabMotor.set(0);
-            CommandScheduler.getInstance().cancel(grabCoral());
-        });
-    }
-
-    public Command stopRelease() {
-        return Commands.runOnce(()-> {
-            grabMotor.set(0);
-            CommandScheduler.getInstance().cancel(releaseCoral());
-        });
-    }
 
     public Command grabCoral() {
         return Commands.run(() -> {
             grabMotor.set(.5);
             intakeState = IntakeState.FULL;
-            while (true) {
-                if (backButton.get() == true) {
-                    grabMotor.set(0);
-                    break;
-                }
+            if (backButton.get() == true) {
+                grabMotor.set(0);
             }
+        });
+    }
+
+    public Command stopGrab() {
+        return Commands.runOnce(()-> {
+            CommandScheduler.getInstance().cancel(grabCoral());
+            grabMotor.set(0);
         });
     }
 
     public Command releaseCoral() {
         return Commands.run(() -> {
-            grabMotor.set(-.5);
+            grabMotor.set(-.25);
             intakeState = IntakeState.EMPTY;
         });
     }
 
+    public Command stopRelease() {
+        return Commands.runOnce(()-> {
+            CommandScheduler.getInstance().cancel(releaseCoral());
+            grabMotor.set(0);
+        });
+    }
 
     public String getIntakeState() {
         return intakeState.toString();
@@ -157,12 +143,6 @@ public class Intake extends SubsystemBase {
         IN,
         OUT,
         MID, // not out, but elevator can pass
-    }
-
-    private enum PassiveIntake {
-        OUT,
-        IN,
-        ERROR,
     }
 
     private enum IntakeState {

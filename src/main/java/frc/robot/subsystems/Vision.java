@@ -54,10 +54,10 @@ public class Vision extends SubsystemBase {
         return VISION;
     }
 
-public Pose3d getRobotPose() {
+public Pose2d getRobotPose() {
     var result = camera.getLatestResult();
     PhotonTrackedTarget target = result.getBestTarget();
-    return PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), aprilTagFieldLayout.getTagPose(target.getFiducialId()).get(), cameraToRobot3d);
+    return PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), aprilTagFieldLayout.getTagPose(target.getFiducialId()).get(), cameraToRobot3d).toPose2d();
 }
 
     public void report() {
@@ -162,7 +162,7 @@ public Pose3d getRobotPose() {
     }
 
     public Command seeAprilAndGo() {
-        Pose2d robotPose = getRobotPose().toPose2d();
+        Pose2d robotPose = getRobotPose();
         var result = camera.getLatestResult();
         PhotonTrackedTarget target = result.getBestTarget();
         int tagID = target.getFiducialId();
@@ -193,7 +193,7 @@ public Pose3d getRobotPose() {
             PhotonTrackedTarget target = result.getBestTarget();
             Pose2d targetPose = aprilTagFieldLayout.getTagPose(target.getFiducialId()).get().toPose2d();
             Pose2d robotPose = PhotonUtils.estimateFieldToRobot(
-            Constants.VisionConstants.cameraHeight, Constants.VisionConstants.reefAprilTagHeight, Constants.VisionConstants.cameraPitch, Math.toRadians(target.getPitch()), Rotation2d.fromDegrees(-target.getYaw()), SWERVE.gyro.getRotation2d(), targetPose, cameraToRobot2d);
+            Constants.VisionConstants.cameraHeight, Constants.VisionConstants.reefAprilTagHeight, Constants.VisionConstants.cameraPitch, Math.toRadians(target.getPitch()), Rotation2d.fromDegrees(-target.getYaw()), SwerveDrive.gyro.getRotation2d(), targetPose, cameraToRobot2d);
         }); //TODO accurate camera height, camera offset
     }
 }

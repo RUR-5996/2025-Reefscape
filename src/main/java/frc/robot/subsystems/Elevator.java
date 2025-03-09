@@ -10,8 +10,10 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.RobotContainer;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -154,34 +156,24 @@ public class Elevator extends SubsystemBase {
         SmartDashboard.putString("algae prio", getAlgaePrio());
     }
 
+    public Command goTo(ElevatorState floor) {
+        return Commands.runOnce(() -> {
+            elevate(floor);
+        });
+    }
+
 
     public String getElevatorState() {
         return state.toString();
     }
+
     public String getAlgaePrio() {
         return algaePrioState.toString();
-    }
-    public String getManual(){
-        return manual.toString();
     }
 
     public void setHeight() {
         leftController.setReference(getMotorRotations(500), ControlType.kPosition);
     }
-
-    public enum ElevatorState {
-        DOWN,
-        FLOOR0,
-        FLOOR1,
-        FLOOR2,
-        FLOOR3,
-    }
-
-    public enum AlgaePrioState {
-        ON,
-        OFF,
-    }
-
 
     private double floorToMm (ElevatorState floor) {//TODO add conversion to DOWN state
         if (floor == ElevatorState.DOWN) {
@@ -244,5 +236,18 @@ public class Elevator extends SubsystemBase {
             default:
                 return 0;
         }
+    }
+
+    public enum ElevatorState {
+        DOWN,
+        FLOOR0,
+        FLOOR1,
+        FLOOR2,
+        FLOOR3,
+    }
+
+    public enum AlgaePrioState {
+        ON,
+        OFF,
     }
 }
