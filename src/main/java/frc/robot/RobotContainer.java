@@ -16,7 +16,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
 public class RobotContainer {
 
-  private final CommandXboxController xBox = new CommandXboxController(0);
+  public final CommandXboxController xBox = new CommandXboxController(0);
   private final SendableChooser<Command> autoChooser;
   private static SendableChooser<Command> autoBranchChooser;
 

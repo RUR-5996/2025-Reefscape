@@ -140,6 +140,20 @@ public class Intake extends SubsystemBase {
         });
     }
 
+    public Command tune() {
+        return Commands.run(() -> {
+            tiltMotor.set(-.05);
+        });
+    }
+
+    public Command stopTune() {
+        return Commands.runOnce(() -> {
+            CommandScheduler.getInstance().cancel(tune());
+            tiltMotor.set(0);
+            tiltEncoder.setPosition(0);
+        });
+    }
+
     public String getIntakeState() {
         return intakeState.toString();
     }

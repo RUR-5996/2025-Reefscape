@@ -6,10 +6,12 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ColourConstants;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.Elevator.ElevatorState;
 import frc.robot.util.Report;
 import frc.robot.util.ScoringTracker;
 
@@ -76,6 +78,11 @@ public class Robot extends TimedRobot{
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
+
+    m_robotContainer.LEFT_INTAKE.intakeOut();
+    m_robotContainer.RIGHT_INTAKE.intakeOut();
+    m_robotContainer.ELEVATOR.goTo(ElevatorState.FLOOR1);
+    m_robotContainer.CLIMBER.climb();
   }
 
   @Override
@@ -84,6 +91,15 @@ public class Robot extends TimedRobot{
     DRIVETRAIN.frModule.testModule();
     DRIVETRAIN.rlModule.testModule();
     DRIVETRAIN.rrModule.testModule();
+
+    m_robotContainer.xBox.x().whileTrue(m_robotContainer.LEFT_INTAKE.tune());
+    m_robotContainer.xBox.x().onFalse(m_robotContainer.LEFT_INTAKE.stopTune());
+    m_robotContainer.xBox.b().whileTrue(m_robotContainer.RIGHT_INTAKE.tune());
+    m_robotContainer.xBox.b().onFalse(m_robotContainer.RIGHT_INTAKE.stopTune());
+    m_robotContainer.xBox.y().whileTrue(m_robotContainer.ELEVATOR.tune());
+    m_robotContainer.xBox.y().onFalse(m_robotContainer.ELEVATOR.stopTune());
+    m_robotContainer.xBox.a().whileTrue(m_robotContainer.CLIMBER.tune());
+    m_robotContainer.xBox.a().onFalse(m_robotContainer.CLIMBER.stopTune());
   }
 
   @Override

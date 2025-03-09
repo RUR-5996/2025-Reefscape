@@ -9,11 +9,10 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
-import frc.robot.RobotContainer;
 
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -219,6 +218,23 @@ public class Elevator extends SubsystemBase {
         }
 
         return requested_motor_rotation * 5; //5 kvuli prevodovce
+    }
+
+    public Command tune() {
+        return Commands.run(() -> {
+            leftMotor.set(-.05);
+            rightMotor.set(-.05);
+        });
+    }
+
+    public Command stopTune() {
+        return Commands.runOnce(() -> {
+            CommandScheduler.getInstance().cancel(tune());
+            leftMotor.set(0);
+            rightMotor.set(0);
+            leftEncoder.setPosition(0);
+            rightEncoder.setPosition(0);
+        });
     }
 
     double getStateRotations(ElevatorState state) {

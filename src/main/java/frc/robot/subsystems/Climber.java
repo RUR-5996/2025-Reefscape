@@ -8,6 +8,7 @@ import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.SparkBaseConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -89,11 +90,23 @@ public class Climber extends SubsystemBase {
         );
     }
 
+    public Command tune() {
+        return Commands.run(() -> {
+            climbMotor.set(-.05);
+        });
+    }
+
+    public Command stopTune() {
+        return Commands.runOnce(() -> {
+            CommandScheduler.getInstance().cancel(tune());
+            climbMotor.set(0);
+            climbEncoder.setPosition(0);
+        });
+    }
 
     public String getClimberState() {
         return state.toString();
     }
-
 
     public enum ClimberState {
         IDLE,
