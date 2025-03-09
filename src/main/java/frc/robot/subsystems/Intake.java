@@ -144,7 +144,6 @@ public class Intake extends SubsystemBase {
     private enum IntakeState {
         EMPTY,
         FULL,
-        ERROR,
     }
 
 

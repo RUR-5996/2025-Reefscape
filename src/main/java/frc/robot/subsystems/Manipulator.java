@@ -54,6 +54,6 @@ public class Manipulator extends SubsystemBase {
     private enum ManipulatorState {
         UP,
         DOWN,
-        ERROR,
+
     }
 }

@@ -99,6 +99,5 @@ public class Climber extends SubsystemBase {
         IDLE,
         OUT,
         CLIMB,
-        ERROR,
     }
 }
