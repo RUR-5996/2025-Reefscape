@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -37,6 +38,8 @@ public class RobotContainer {
         RobotConfig config;
 
     public RobotContainer() {
+            PneumaticsControlModule PCM = new PneumaticsControlModule(0);
+
             SWERVE = SwerveDrive.getInstance();
             DRIVETRAIN = DriveTrain.getInstance();
             LEDS = LEDs.getInstance();
@@ -45,7 +48,7 @@ public class RobotContainer {
             VISION = Vision.getInstance();
             LEFT_INTAKE = new Intake(50, 51, 0, 1);
             RIGHT_INTAKE = new Intake(52, 53, 2, 3);
-            CLIMBER = Climber.getInstance();
+            CLIMBER = Climber.getInstance(PCM);
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
 

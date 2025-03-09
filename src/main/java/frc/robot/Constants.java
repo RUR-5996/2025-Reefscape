@@ -114,6 +114,9 @@ public static class IntakeConstants { // angles in rad
     public static double EXTENSION_MID = -0.174533;
     public static double TILT_MOTOR_COEFFICIENT = 18; // 1/20 * 360?
   }
+public static class ClimberConstants { // angles in rad
+    public static double ANGLE_OUT = 0.349066;
+  }
 
   public static class PathplanningConstants {
   public static Map<Integer, Pose2d> aprilTagPoseMap = Map.ofEntries(//coords in m, angle in deg  NOT positions of tag, but where should robot go

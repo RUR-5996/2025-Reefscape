@@ -15,6 +15,11 @@ import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
+import frc.robot.Constants;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkClosedLoopController;
 
 
 public class Climber extends SubsystemBase {
@@ -30,11 +35,11 @@ public class Climber extends SubsystemBase {
     DoubleSolenoid climbSolenoid;
     PneumaticsControlModule climbModule;
 
-    public Climber() {
+    public Climber(PneumaticsControlModule pcm) {
         climbMotor = new SparkMax(55, SparkLowLevel.MotorType.kBrushless);
 
         climbSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
-        climbModule = new PneumaticsControlModule(0);
+        climbModule = pcm;
 
         SparkMaxConfig intakeConfig = new SparkMaxConfig(); // TODO fix values
         intakeConfig
@@ -53,9 +58,9 @@ public class Climber extends SubsystemBase {
 
     }
 
-    public static Climber getInstance() {
+    public static Climber getInstance(PneumaticsControlModule pcm) {
         if(CLIMBER == null) {
-            CLIMBER = new Climber();
+            CLIMBER = new Climber(pcm);
         }
 
         return CLIMBER;
@@ -69,7 +74,7 @@ public class Climber extends SubsystemBase {
                     state = ClimberState.OUT;
                 }),
                 Commands.run(() -> {
-                    climbMotor.set(0.5);
+                    climbController.setReference(Constants.ClimberConstants.ANGLE_OUT, ControlType.kPosition);
                 })
         );
     }
@@ -80,8 +85,8 @@ public class Climber extends SubsystemBase {
                     climbSolenoid.set(Value.kReverse);
                     state = ClimberState.CLIMB;
                 }),
-                Commands.run(() -> {
-                    climbMotor.set(-0.5);
+                Commands.runOnce(() -> {
+                    climbController.setReference(0, ControlType.kPosition);
                 })
         );
     }
