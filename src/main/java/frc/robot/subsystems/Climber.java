@@ -15,11 +15,7 @@ import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 import edu.wpi.first.wpilibj.DoubleSolenoid.Value;
 import edu.wpi.first.wpilibj.DoubleSolenoid;
-import frc.robot.Constants;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkClosedLoopController;
 
 
 public class Climber extends SubsystemBase {
@@ -67,18 +63,20 @@ public class Climber extends SubsystemBase {
     }
 
 
-    public Command out() {
-        return Commands.parallel(
-                Commands.runOnce(() -> {
-                    climbSolenoid.set(DoubleSolenoid.Value.kForward);
-                    state = ClimberState.OUT;
-                }),
-                Commands.run(() -> {
-                    climbController.setReference(Constants.ClimberConstants.ANGLE_OUT, ControlType.kPosition);
-                })
+    public Command out(Command climbPrep) {
+        return Commands.sequence(
+                climbPrep,
+                Commands.parallel(
+                        Commands.runOnce(() -> {
+                            climbSolenoid.set(DoubleSolenoid.Value.kForward);
+                            state = ClimberState.OUT;
+                        }),
+                        Commands.runOnce(() -> {
+                            climbController.setReference(Constants.ClimberConstants.ANGLE_OUT, ControlType.kPosition);
+                        })
+                )
         );
     }
-
     public Command climb() {
         return Commands.parallel(
                 Commands.runOnce(() -> {

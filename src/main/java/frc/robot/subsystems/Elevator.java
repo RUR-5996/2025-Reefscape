@@ -93,7 +93,7 @@ public class Elevator extends SubsystemBase {
                         Commands.either(right.intakeMid().andThen(elevate(target)), Commands.none(), () -> (right.intakePosition == Intake.IntakePosition.IN)))
                 .andThen(elevate(target)),
                 elevate(target),
-                () -> (state == ElevatorState.DOWN || state == ElevatorState.FLOOR0)
+                () -> (state == ElevatorState.DOWN || state == ElevatorState.FLOOR0) || (target == ElevatorState.DOWN || target == ElevatorState.FLOOR0)
         );
     }
 
