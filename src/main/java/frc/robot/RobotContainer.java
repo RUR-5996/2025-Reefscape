@@ -112,7 +112,7 @@ public class RobotContainer {
 
           //xBox.a().onTrue(MANIPULATOR.dropCoralAndReturn());
           //xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manually set height
-          //xBox.x().onTrue(VISION.seeAprilAndGo().andThen(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)).andThen(MANIPULATOR.dropCoralAndReturn().andThen(LEFT_INTAKE.intakeMid()).alongWith(RIGHT_INTAKE.intakeMid()).andThen(ELEVATOR.goTo(ElevatorState.DOWN))));
+          //xBox.x().onTrue(ELEVATOR.autoDeploy(VISION, LEFT_INTAKE, RIGHT_INTAKE, MANIPULATOR));
           //xBox.y().onTrue(Commands.either(CLIMBER.climb(), CLIMBER.out(Commands.sequence(ELEVATOR.checkElevator(Elevator.ElevatorState.DOWN, LEFT_INTAKE, RIGHT_INTAKE), Commands.parallel(LEFT_INTAKE.intakeMid(), RIGHT_INTAKE.intakeMid()))), () -> (CLIMBER.state == Climber.ClimberState.OUT)));
 
           //xBox.leftTrigger().onTrue(LEFT_INTAKE.grabCoralSequence());

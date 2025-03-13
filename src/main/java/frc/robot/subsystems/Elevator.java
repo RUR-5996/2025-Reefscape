@@ -8,10 +8,7 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Constants;
 
 import com.revrobotics.spark.SparkMax;
@@ -20,6 +17,8 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 public class Elevator extends SubsystemBase {
 
@@ -111,6 +110,18 @@ public class Elevator extends SubsystemBase {
     }
 
 
+    public SequentialCommandGroup autoDeploy(Vision vision, Intake left, Intake right, Manipulator manipulator) {
+        return new SequentialCommandGroup(
+            vision.seeAprilAndGo(),
+            checkElevator(manual, left, right),
+            waitUntil(() -> (state == manual)),
+            manipulator.dropCoralAndReturn(),
+            left.intakeMid(),
+            right.intakeMid(),
+            checkElevator(ElevatorState.DOWN, left, right)
+        );
+    }
+
     public void elevate(ElevatorState floor, boolean nic) { //takes target floor
         //double rotations = getStateRotations(floor);
         double rotations = (getMotorRotations(floorToDownMM(floor))); //TODO fix mezifloor travel
@@ -156,12 +167,6 @@ public class Elevator extends SubsystemBase {
             algaePrioState = AlgaePrioState.OFF;
         }
         SmartDashboard.putString("algae prio", getAlgaePrio());
-    }
-
-    public Command goTo(ElevatorState floor) {
-        return Commands.runOnce(() -> {
-            elevate(floor);
-        });
     }
 
 

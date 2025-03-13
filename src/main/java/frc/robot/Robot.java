@@ -84,7 +84,7 @@ public class Robot extends TimedRobot{
 
     m_robotContainer.LEFT_INTAKE.intakeOut();
     m_robotContainer.RIGHT_INTAKE.intakeOut();
-    m_robotContainer.ELEVATOR.goTo(ElevatorState.FLOOR1);
+    m_robotContainer.ELEVATOR.checkElevator(ElevatorState.FLOOR1, m_robotContainer.LEFT_INTAKE, m_robotContainer.RIGHT_INTAKE);
     m_robotContainer.CLIMBER.climb();
 
     DRIVETRAIN.flModule.testModule();
