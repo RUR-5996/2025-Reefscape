@@ -96,7 +96,7 @@ public class Robot extends TimedRobot{
   @Override
   public void testPeriodic() {
     m_robotContainer.xBox.x().whileTrue(m_robotContainer.LEFT_INTAKE.tune());
-    m_robotContainer.xBox.x().onFalse(m_robotContainer.LEFT_INTAKE.stopTune());
+    m_robotContainer.xBox.x().onFalse (m_robotContainer.LEFT_INTAKE.stopTune());
     m_robotContainer.xBox.b().whileTrue(m_robotContainer.RIGHT_INTAKE.tune());
     m_robotContainer.xBox.b().onFalse(m_robotContainer.RIGHT_INTAKE.stopTune());
     m_robotContainer.xBox.y().whileTrue(m_robotContainer.ELEVATOR.tune());
