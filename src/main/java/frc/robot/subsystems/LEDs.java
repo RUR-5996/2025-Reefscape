@@ -7,7 +7,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
 public class LEDs extends SubsystemBase {
-    Spark blinkin = new Spark(0);
+    Spark blinkin = new Spark(9);
     private double colour = Constants.ColourConstants.PINK;
 
     private static LEDs LEDS;

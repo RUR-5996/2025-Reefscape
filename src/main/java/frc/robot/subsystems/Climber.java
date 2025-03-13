@@ -35,7 +35,7 @@ public class Climber extends SubsystemBase {
     public Climber(PneumaticsControlModule pcm) {
         climbMotor = new SparkMax(55, SparkLowLevel.MotorType.kBrushless);
 
-        climbSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 0, 1);
+        climbSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 6, 7);
         climbModule = pcm;
 
         SparkMaxConfig intakeConfig = new SparkMaxConfig(); // TODO fix values
@@ -89,15 +89,33 @@ public class Climber extends SubsystemBase {
         );
     }
 
-    public Command tune() {
-        return Commands.run(() -> {
-            climbMotor.set(-.05);
+    public Command rodOut() {
+        return Commands.runOnce(() -> {
+            climbSolenoid.set(Value.kForward);
+        });
+    }
+
+    public Command rodIn() {
+        return Commands.runOnce(() -> {
+            climbSolenoid.set(Value.kReverse);
+        });
+    }
+
+    public Command tuneIn() {
+        return Commands.runOnce(() -> {
+            climbMotor.set(.7);
+        });
+    }
+
+    public Command tuneOut() {
+        return Commands.runOnce(() -> {
+            climbMotor.set(-.7);
         });
     }
 
     public Command stopTune() {
         return Commands.runOnce(() -> {
-            CommandScheduler.getInstance().cancel(tune());
+            //CommandScheduler.getInstance().cancel(tune());
             climbMotor.set(0);
             climbEncoder.setPosition(0);
         });

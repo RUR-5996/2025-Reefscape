@@ -4,6 +4,7 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -23,6 +24,8 @@ import frc.robot.Constants;
 
 public class Intake extends SubsystemBase {
 
+    int grabID;
+
     // for grabbing coral
     SparkMax grabMotor;
 
@@ -38,8 +41,10 @@ public class Intake extends SubsystemBase {
     DigitalInput backButton;
 
     boolean isGrabOn = false;
+    double ref = 0;
 
     public Intake(int grabId, int tiltId, int frontButtonID, int backButtonID) {
+        grabID = grabId;
         grabMotor = new SparkMax(grabId, MotorType.kBrushless);
         tiltMotor = new SparkMax(tiltId, MotorType.kBrushless);
 
@@ -49,13 +54,14 @@ public class Intake extends SubsystemBase {
         SparkMaxConfig intakeConfig = new SparkMaxConfig(); // config for grab motor, TODO add for tilt
         intakeConfig
             .inverted(false)
-            .idleMode(IdleMode.kBrake);
+            .idleMode(IdleMode.kBrake)
+            .closedLoopRampRate(0.5);
         intakeConfig.closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .p(10)
+            .p(.02)
             .i(0)
             .d(0)
-            .outputRange(-0.3, 0.3)
+            .outputRange(-0.2, 0.2)
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(-180, 180);
 
@@ -72,6 +78,10 @@ public class Intake extends SubsystemBase {
         SmartDashboard.putBoolean("Passive intake out", false);
     }
 
+    public void permaTilt() {
+        tiltController.setReference(ref, ControlType.kPosition);
+    }
+
     public SequentialCommandGroup grabCoralSequence() {
         return new SequentialCommandGroup(
             intakeOut(), grabCoral()
@@ -86,12 +96,14 @@ public class Intake extends SubsystemBase {
     public  Command intakeMid() {
         return Commands.runOnce(()-> {
             tiltController.setReference(Constants.IntakeConstants.EXTENSION_MID, SparkMax.ControlType.kPosition);
+            ref = Constants.IntakeConstants.EXTENSION_MID;
             intakePosition = IntakePosition.MID;
         });
     }
 
     public Command intakeOut() {
         return Commands.runOnce(()-> {
+            ref = Constants.IntakeConstants.EXTENSION_OUT;
             tiltController.setReference(Constants.IntakeConstants.EXTENSION_OUT, SparkMax.ControlType.kPosition);
             intakePosition = IntakePosition.OUT;
         });
@@ -99,27 +111,30 @@ public class Intake extends SubsystemBase {
 
     public Command intakeIn() {
         return Commands.runOnce(()-> {
+            ref = Constants.IntakeConstants.EXTENSION_IN;
             tiltController.setReference(Constants.IntakeConstants.EXTENSION_IN, SparkMax.ControlType.kPosition);
             intakePosition = IntakePosition.IN;
         });
     }
 
     public Command grabCoral() {
-        return Commands.run(() -> {
+        return Commands.runOnce(() -> {
             isGrabOn = true;
-            grabMotor.set(.5);
+            //CommandScheduler.getInstance().cancel(stopGrab());
+            grabMotor.set(-.9);
             intakeState = IntakeState.FULL;
-            if (backButton.get() == true) {
+            /*if (backButton.get()) {
                 grabMotor.set(0);
                 isGrabOn = false;
-            }
+            }*/
         });
     }
 
     public Command stopGrab() {
-        return Commands.run(()-> {
-            if (frontButton.get() == true || backButton.get() == false) {
-                CommandScheduler.getInstance().cancel(grabCoral());
+        return Commands.runOnce(()-> {
+            grabMotor.set(0);
+            if (frontButton.get()|| !backButton.get()) {
+                //CommandScheduler.getInstance().cancel(grabCoral());
                 grabMotor.set(0);
                 isGrabOn = false;
             }
@@ -127,8 +142,8 @@ public class Intake extends SubsystemBase {
     }
 
     public Command releaseCoral() {
-        return Commands.run(() -> {
-            grabMotor.set(-.25);
+        return Commands.runOnce(() -> {
+            grabMotor.set(.45);
             intakeState = IntakeState.EMPTY;
         });
     }
@@ -160,6 +175,11 @@ public class Intake extends SubsystemBase {
 
     public boolean getGrabState() {
         return isGrabOn;
+    }
+
+    public void report() {
+        SmartDashboard.putNumber("intake" + grabID, tiltEncoder.getPosition());
+        SmartDashboard.putNumber("intakeRef" + grabID, ref);
     }
 
     public enum IntakePosition {

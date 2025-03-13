@@ -56,8 +56,13 @@ public class Vision extends SubsystemBase {
 
 public Pose2d getRobotPose() {
     var result = camera.getLatestResult();
-    PhotonTrackedTarget target = result.getBestTarget();
-    return PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), aprilTagFieldLayout.getTagPose(target.getFiducialId()).get(), cameraToRobot3d).toPose2d();
+    if(result != null && result.getBestTarget()!=null) {
+        PhotonTrackedTarget target = result.getBestTarget();
+        return PhotonUtils.estimateFieldToRobotAprilTag(target.getBestCameraToTarget(), aprilTagFieldLayout.getTagPose(target.getFiducialId()).get(), cameraToRobot3d).toPose2d();
+    } else {
+        return new Pose2d(); //TODO upravit, aby se to nemohlo propsat do robota (pro start autonomniho sem napsat odhadovanou pozici robota, aby to uplne neblbnulo)
+    }
+    
 }
 
     public void report() {
@@ -162,10 +167,14 @@ public Pose2d getRobotPose() {
     }
 
     public Command seeAprilAndGo() {
-        Pose2d robotPose = getRobotPose();
+        //Pose2d robotPose = getRobotPose();
+        Pose2d robotPose = new Pose2d(0, 0, new Rotation2d(0));
         var result = camera.getLatestResult();
         PhotonTrackedTarget target = result.getBestTarget();
-        int tagID = target.getFiducialId();
+        int tagID = -1;
+        if(target != null) {
+            tagID = target.getFiducialId();
+        }
         if ((tagID >= 6 && tagID <= 11) || (tagID >= 17 && tagID <= 22)) { //check if tag on reef
             return Pathplanning.getPathCommand(robotPose, tagID);
         } else {

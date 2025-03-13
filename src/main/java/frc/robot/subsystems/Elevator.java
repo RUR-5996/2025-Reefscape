@@ -45,18 +45,21 @@ public class Elevator extends SubsystemBase {
 
         SparkMaxConfig config = new SparkMaxConfig();
         config
-            .idleMode(IdleMode.kBrake);
+            .idleMode(IdleMode.kBrake)
+            .closedLoopRampRate(.3);
+        config.encoder
+            .positionConversionFactor(1);
         config.closedLoop
             .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-            .p(10)
+            .p(.45
+            )
             .i(0)
             .d(0)
-            .outputRange(-0.3, 0.3)
-            .positionWrappingEnabled(true)
-            .positionWrappingInputRange(-180, 180);
-        config.inverted(false);
+            .outputRange(-0.5, 0.5);
+        config.inverted(true);
         leftMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
         config.inverted(true);
+        //config.encoder.inverted(true);
         rightMotor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
         leftEncoder = leftMotor.getEncoder();
@@ -96,12 +99,12 @@ public class Elevator extends SubsystemBase {
         );
     }
 
-    private Command elevate(ElevatorState floor) { //TODO smazat void a bool
+    public Command elevate(ElevatorState floor) { //TODO smazat void a bool
         return Commands.runOnce(() -> {
             //double rotations = getMotorRotations((floorToMm(floor)-frc.robot.Constants.ElevatorConstants.DOWN));
             double rotations = getStateRotations(floor);
             leftController.setReference(rotations, SparkMax.ControlType.kPosition);
-            rightController.setReference(rotations, SparkMax.ControlType.kPosition);
+            rightController.setReference(-rotations, SparkMax.ControlType.kPosition);
             state = floor;
             SmartDashboard.putNumber("rotations", rotations);
         });
@@ -242,7 +245,7 @@ public class Elevator extends SubsystemBase {
             case DOWN:
                 return 0;
             case FLOOR0:
-                return 5;
+                return 50;
             case FLOOR1:
                 return 10;
             case FLOOR2:

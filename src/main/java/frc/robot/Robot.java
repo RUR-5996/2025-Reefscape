@@ -73,7 +73,10 @@ public class Robot extends TimedRobot{
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    //m_robotContainer.LEFT_INTAKE.permaTilt();
+    //m_robotContainer.RIGHT_INTAKE.permaTilt();
+  }
 
   @Override
   public void testInit() {
@@ -98,7 +101,7 @@ public class Robot extends TimedRobot{
     m_robotContainer.xBox.b().onFalse(m_robotContainer.RIGHT_INTAKE.stopTune());
     m_robotContainer.xBox.y().whileTrue(m_robotContainer.ELEVATOR.tune());
     m_robotContainer.xBox.y().onFalse(m_robotContainer.ELEVATOR.stopTune());
-    m_robotContainer.xBox.a().whileTrue(m_robotContainer.CLIMBER.tune());
+    m_robotContainer.xBox.a().whileTrue(m_robotContainer.CLIMBER.tuneIn());
     m_robotContainer.xBox.a().onFalse(m_robotContainer.CLIMBER.stopTune());
     m_robotContainer.xBox.povUp().onTrue(m_robotContainer.MANIPULATOR.dropCoral());
     m_robotContainer.xBox.povUp().onFalse(m_robotContainer.MANIPULATOR.returnCoral());
