@@ -83,15 +83,20 @@ public class RobotContainer {
           LEDS.setColour(((int)relativePosition[3] % 2 == 0) ? Constants.ColourConstants.FLASHBANG : Constants.ColourConstants.PINK);
         }));*/
 
-          testBox.a().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE));
+          //testBox.a().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE));
           testBox.b().onTrue(RIGHT_INTAKE.intakeMid());
           testBox.a().onTrue(RIGHT_INTAKE.intakeIn());
           testBox.x().onTrue(RIGHT_INTAKE.intakeOut());
 
+          testBox.leftBumper().toggleOnTrue(RIGHT_INTAKE.grabCoral());
+          testBox.leftBumper().toggleOnFalse(RIGHT_INTAKE.stopGrab());
+          testBox.rightBumper().toggleOnTrue(RIGHT_INTAKE.releaseCoral());
+          testBox.rightBumper().toggleOnFalse(RIGHT_INTAKE.stopGrab());
+
           //testBox.a().onTrue(RIGHT_INTAKE.grabCoral());
           //testBox.b().onTrue(RIGHT_INTAKE.stopGrab());
           //testBox.x().onTrue(RIGHT_INTAKE.releaseCoral());
-          testBox.y().onTrue(ELEVATOR.elevate(ElevatorState.FLOOR0));
+          //testBox.y().onTrue(ELEVATOR.elevate(ElevatorState.FLOOR0));
           testBox.povDown().onTrue(ELEVATOR.elevate(ElevatorState.DOWN));
           testBox.povLeft().onTrue(CLIMBER.tuneIn());
           testBox.povRight().onTrue(CLIMBER.tuneOut());

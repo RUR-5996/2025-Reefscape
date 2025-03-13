@@ -86,15 +86,15 @@ public class Robot extends TimedRobot{
     m_robotContainer.RIGHT_INTAKE.intakeOut();
     m_robotContainer.ELEVATOR.goTo(ElevatorState.FLOOR1);
     m_robotContainer.CLIMBER.climb();
-  }
 
-  @Override
-  public void testPeriodic() {
     DRIVETRAIN.flModule.testModule();
     DRIVETRAIN.frModule.testModule();
     DRIVETRAIN.rlModule.testModule();
     DRIVETRAIN.rrModule.testModule();
+  }
 
+  @Override
+  public void testPeriodic() {
     m_robotContainer.xBox.x().whileTrue(m_robotContainer.LEFT_INTAKE.tune());
     m_robotContainer.xBox.x().onFalse(m_robotContainer.LEFT_INTAKE.stopTune());
     m_robotContainer.xBox.b().whileTrue(m_robotContainer.RIGHT_INTAKE.tune());

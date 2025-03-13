@@ -109,9 +109,9 @@ public final class Constants {
 }
 
 public static class IntakeConstants { // angles in rad
-    public static double EXTENSION_IN = 0; // TODO add CAD measurements
-    public static double EXTENSION_OUT = 60;
-    public static double EXTENSION_MID = 10;
+    public static double EXTENSION_IN = -10; // TODO add CAD measurements
+    public static double EXTENSION_OUT = 135;
+    public static double EXTENSION_MID = 30;
     public static double TILT_MOTOR_COEFFICIENT = 18; // 1/20 * 360?
   }
 public static class ClimberConstants { // angles in rad
