@@ -108,9 +108,9 @@ public final class Constants {
     public static double limelightFOVHor = 1.090831;
 }
 
-public static class IntakeConstants { // angles in rad
+public static class IntakeConstants { // angles in degrees
     public static double EXTENSION_IN = 0; // TODO add CAD measurements
-    public static double EXTENSION_OUT = 60;
+    public static double EXTENSION_OUT = 105;
     public static double EXTENSION_MID = 10;
     public static double TILT_MOTOR_COEFFICIENT = 18; // 1/20 * 360?
   }
