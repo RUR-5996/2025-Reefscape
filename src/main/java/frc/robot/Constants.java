@@ -1,5 +1,6 @@
 package frc.robot;
 
+import java.lang.reflect.Array;
 import java.util.Map;
 
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -159,6 +160,11 @@ public final class UIConstants {
         public static final String[] POSITIONS = {"None", "Amp", "Source", "Stage"};
         public static final double SELECTOR_WIDTH = 150;
         public static final double SELECTOR_HEIGHT = 40;
+    }
+
+    public static final class reefSideUI {
+      public static final Integer[] redTags = {8, 7, 6, 11, 10, 9}; // clockwise starting up right
+      public static final Integer[] blueTags = {20, 21, 22, 17, 18, 19};
     }
 }
 

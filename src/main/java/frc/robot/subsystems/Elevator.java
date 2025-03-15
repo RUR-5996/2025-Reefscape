@@ -8,6 +8,8 @@ import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkMaxConfig;
 
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.*;
 import frc.robot.Constants;
 
@@ -17,6 +19,8 @@ import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkClosedLoopController;
 
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import frc.robot.ui.DashboardManager;
+import frc.robot.util.Pathplanning;
 
 import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
@@ -110,9 +114,9 @@ public class Elevator extends SubsystemBase {
     }
 
 
-    public SequentialCommandGroup autoDeploy(Vision vision, Intake left, Intake right, Manipulator manipulator) {
+    public SequentialCommandGroup autoDeploy(DashboardManager dashboard, Intake left, Intake right, Manipulator manipulator) {
         return new SequentialCommandGroup(
-            vision.seeAprilAndGo(),
+            Pathplanning.getPathCommand(new Pose2d(0, 0, new Rotation2d(0)), dashboard.reefSidePicker.manualReefID),
             checkElevator(manual, left, right),
             waitUntil(() -> (state == manual)),
             manipulator.dropCoralAndReturn(),

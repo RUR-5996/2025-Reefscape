@@ -14,6 +14,8 @@ import frc.robot.subsystems.Elevator.ElevatorState;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
+import frc.robot.ui.DashboardManager;
+
 public class RobotContainer {
 
   public final CommandXboxController xBox = new CommandXboxController(0);
@@ -35,6 +37,7 @@ public class RobotContainer {
           public Vision VISION;
           public Climber CLIMBER;
           private LEDs LEDS;
+          public DashboardManager DASHBOARD;
 
           private Trigger leftGrabMotor;
           private Trigger rightGrabMotor;
@@ -51,9 +54,9 @@ public class RobotContainer {
             MANIPULATOR = Manipulator.getInstance();
             VISION = Vision.getInstance();
             CLIMBER = Climber.getInstance(PCM);
-
             LEFT_INTAKE = new Intake(51, 50, 0, 1);
             RIGHT_INTAKE = new Intake(53, 52, 2, 3);
+            DASHBOARD = new DashboardManager();
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
 
@@ -107,7 +110,7 @@ public class RobotContainer {
 
           //xBox.a().onTrue(MANIPULATOR.dropCoralAndReturn());
           //xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manually set height
-          //xBox.x().onTrue(ELEVATOR.autoDeploy(VISION, LEFT_INTAKE, RIGHT_INTAKE, MANIPULATOR));
+          //xBox.x().onTrue(ELEVATOR.autoDeploy(DASHBOARD, LEFT_INTAKE, RIGHT_INTAKE, MANIPULATOR));
           //xBox.y().onTrue(Commands.either(CLIMBER.climb(), CLIMBER.out(Commands.sequence(ELEVATOR.checkElevator(Elevator.ElevatorState.DOWN, LEFT_INTAKE, RIGHT_INTAKE), Commands.parallel(LEFT_INTAKE.intakeMid(), RIGHT_INTAKE.intakeMid()))), () -> (CLIMBER.state == Climber.ClimberState.OUT)));
 
           //xBox.leftTrigger().onTrue(LEFT_INTAKE.grabCoralSequence());
