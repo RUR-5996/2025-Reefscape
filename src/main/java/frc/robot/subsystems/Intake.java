@@ -61,7 +61,7 @@ public class Intake extends SubsystemBase {
             .p(.02)
             .i(0)
             .d(0)
-            .outputRange(-0.2, 0.2)
+            .outputRange(-0.15, 0.15)
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(-180, 180);
 
@@ -143,7 +143,7 @@ public class Intake extends SubsystemBase {
 
     public Command releaseCoral() {
         return Commands.runOnce(() -> {
-            grabMotor.set(.45);
+            grabMotor.set(.55);
             intakeState = IntakeState.EMPTY;
         });
     }
