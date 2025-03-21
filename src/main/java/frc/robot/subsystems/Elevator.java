@@ -122,6 +122,7 @@ public class Elevator extends SubsystemBase {
             manipulator.dropCoralAndReturn(),
             left.intakeMid(),
             right.intakeMid(),
+            waitUntil(() -> (left.intakePosition == Intake.IntakePosition.MID) && (right.intakePosition == Intake.IntakePosition.MID)),
             checkElevator(ElevatorState.DOWN, left, right)
         );
     }

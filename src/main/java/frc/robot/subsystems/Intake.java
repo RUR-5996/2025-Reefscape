@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants;
 
+import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 public class Intake extends SubsystemBase {
 
@@ -28,6 +29,7 @@ public class Intake extends SubsystemBase {
 
     // for grabbing coral
     SparkMax grabMotor;
+    RelativeEncoder grabEncoder;
 
     // for moving intake
     SparkMax tiltMotor;
@@ -90,14 +92,16 @@ public class Intake extends SubsystemBase {
 
     public SequentialCommandGroup releaseCoralSequence() {
         return new SequentialCommandGroup(
-           stopGrab(), intakeIn(), releaseCoral(), new WaitCommand(.5), stopRelease(), intakeMid()
+           stopGrab(), intakeIn(), waitUntil(() -> intakePosition == IntakePosition.IN), releaseCoral(), new WaitCommand(.5), stopRelease(), waitUntil(() -> (intakeState == IntakeState.EMPTY)), intakeMid(), waitUntil(() -> intakePosition == IntakePosition.MID)
         );
     }
     public  Command intakeMid() {
         return Commands.runOnce(()-> {
             tiltController.setReference(Constants.IntakeConstants.EXTENSION_MID, SparkMax.ControlType.kPosition);
             ref = Constants.IntakeConstants.EXTENSION_MID;
-            intakePosition = IntakePosition.MID;
+            if (tiltEncoder.getPosition() == Constants.IntakeConstants.EXTENSION_MID) {
+                intakePosition = IntakePosition.MID;
+            }
         });
     }
 
@@ -105,7 +109,9 @@ public class Intake extends SubsystemBase {
         return Commands.runOnce(()-> {
             ref = Constants.IntakeConstants.EXTENSION_OUT;
             tiltController.setReference(Constants.IntakeConstants.EXTENSION_OUT, SparkMax.ControlType.kPosition);
-            intakePosition = IntakePosition.OUT;
+            if (tiltEncoder.getPosition() == Constants.IntakeConstants.EXTENSION_OUT) {
+                intakePosition = IntakePosition.OUT;
+            }
         });
     }
 
@@ -113,7 +119,9 @@ public class Intake extends SubsystemBase {
         return Commands.runOnce(()-> {
             ref = Constants.IntakeConstants.EXTENSION_IN;
             tiltController.setReference(Constants.IntakeConstants.EXTENSION_IN, SparkMax.ControlType.kPosition);
-            intakePosition = IntakePosition.IN;
+            if (tiltEncoder.getPosition() == Constants.IntakeConstants.EXTENSION_IN) {
+                intakePosition = IntakePosition.IN;
+            }
         });
     }
 
@@ -122,7 +130,9 @@ public class Intake extends SubsystemBase {
             isGrabOn = true;
             //CommandScheduler.getInstance().cancel(stopGrab());
             grabMotor.set(-.9);
-            intakeState = IntakeState.FULL;
+            if (grabEncoder.getPosition() == -.9) {
+                intakeState = IntakeState.FULL;
+            }
             /*if (backButton.get()) {
                 grabMotor.set(0);
                 isGrabOn = false;
@@ -144,7 +154,9 @@ public class Intake extends SubsystemBase {
     public Command releaseCoral() {
         return Commands.runOnce(() -> {
             grabMotor.set(.55);
-            intakeState = IntakeState.EMPTY;
+            if (grabEncoder.getPosition() == .55) {
+                intakeState = IntakeState.EMPTY;
+            }
         });
     }
 
@@ -152,6 +164,9 @@ public class Intake extends SubsystemBase {
         return Commands.runOnce(()-> {
             CommandScheduler.getInstance().cancel(releaseCoral());
             grabMotor.set(0);
+            if (grabEncoder.getPosition() == 0) {
+                intakeState = IntakeState.EMPTY;
+            }
         });
     }
 

@@ -10,6 +10,8 @@ import edu.wpi.first.wpilibj.DoubleSolenoid;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.PneumaticsModuleType;
 
+import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
+
 public class Manipulator extends SubsystemBase {
 
     private static Manipulator MANIPULATOR;
@@ -47,7 +49,7 @@ public class Manipulator extends SubsystemBase {
     }
 
     public SequentialCommandGroup dropCoralAndReturn() {
-        return new SequentialCommandGroup(dropCoral(), new WaitCommand(1), returnCoral());
+        return new SequentialCommandGroup(dropCoral(), waitUntil(() -> (state == ManipulatorState.DOWN)), returnCoral(), waitUntil((() -> (state == ManipulatorState.UP))));
     }
 
     public String getManipualtorState() {
