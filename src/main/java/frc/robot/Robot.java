@@ -6,16 +6,18 @@ package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ColourConstants;
 import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.LEDs;
+import frc.robot.subsystems.Elevator.ElevatorState;
 import frc.robot.util.Report;
 import frc.robot.util.ScoringTracker;
 
 public class Robot extends TimedRobot{
   public static Command m_autonomousCommand;
-
+  ScoringTracker scoringTracker;
   RobotContainer m_robotContainer;
   Report REPORT;
   DriveTrain DRIVETRAIN;
@@ -23,7 +25,7 @@ public class Robot extends TimedRobot{
 
   @Override
   public void robotInit() {
-    ScoringTracker scoringTracker = new ScoringTracker();
+    scoringTracker = new ScoringTracker();
     m_robotContainer = new RobotContainer();
     REPORT = Report.getInstance();
     DRIVETRAIN = DriveTrain.getInstance();
@@ -71,19 +73,47 @@ public class Robot extends TimedRobot{
   }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    //m_robotContainer.LEFT_INTAKE.permaTilt();
+    //m_robotContainer.RIGHT_INTAKE.permaTilt();
+  }
 
   @Override
   public void testInit() {
     CommandScheduler.getInstance().cancelAll();
-  }
 
-  @Override
-  public void testPeriodic() {
+    m_robotContainer.LEFT_INTAKE.intakeOut();
+    m_robotContainer.RIGHT_INTAKE.intakeOut();
+    m_robotContainer.ELEVATOR.checkElevator(ElevatorState.FLOOR1, m_robotContainer.LEFT_INTAKE, m_robotContainer.RIGHT_INTAKE);
+    m_robotContainer.CLIMBER.climb();
+
     DRIVETRAIN.flModule.testModule();
     DRIVETRAIN.frModule.testModule();
     DRIVETRAIN.rlModule.testModule();
     DRIVETRAIN.rrModule.testModule();
+  }
+
+  @Override
+  public void testPeriodic() {
+    m_robotContainer.xBox.x().whileTrue(m_robotContainer.LEFT_INTAKE.tune());
+    m_robotContainer.xBox.x().onFalse (m_robotContainer.LEFT_INTAKE.stopTune());
+    m_robotContainer.xBox.b().whileTrue(m_robotContainer.RIGHT_INTAKE.tune());
+    m_robotContainer.xBox.b().onFalse(m_robotContainer.RIGHT_INTAKE.stopTune());
+    m_robotContainer.xBox.y().whileTrue(m_robotContainer.ELEVATOR.tune());
+    m_robotContainer.xBox.y().onFalse(m_robotContainer.ELEVATOR.stopTune());
+    m_robotContainer.xBox.a().whileTrue(m_robotContainer.CLIMBER.tuneIn());
+    m_robotContainer.xBox.a().onFalse(m_robotContainer.CLIMBER.stopTune());
+    m_robotContainer.xBox.povUp().onTrue(m_robotContainer.MANIPULATOR.dropCoral());
+    m_robotContainer.xBox.povUp().onFalse(m_robotContainer.MANIPULATOR.returnCoral());
+
+    m_robotContainer.xBox.leftTrigger().onTrue(m_robotContainer.DRIVETRAIN.flTest());
+    m_robotContainer.xBox.rightTrigger().onTrue(m_robotContainer.DRIVETRAIN.frTest());
+    m_robotContainer.xBox.leftBumper().onTrue(m_robotContainer.DRIVETRAIN.rlTest());
+    m_robotContainer.xBox.rightBumper().onTrue(m_robotContainer.DRIVETRAIN.rrTest());
+    m_robotContainer.xBox.leftTrigger().onFalse(m_robotContainer.DRIVETRAIN.flTestStop());
+    m_robotContainer.xBox.rightTrigger().onFalse(m_robotContainer.DRIVETRAIN.frTestStop());
+    m_robotContainer.xBox.leftBumper().onFalse(m_robotContainer.DRIVETRAIN.rlTestStop());
+    m_robotContainer.xBox.rightBumper().onFalse(m_robotContainer.DRIVETRAIN.rrTestStop());
   }
 
   @Override

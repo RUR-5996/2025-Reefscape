@@ -14,8 +14,6 @@ public class ScoringTracker {
 
     static int[][][] reefs = {blue, red};
 
-
-
     public static int getStatusOfReefLocation(int collumn, int level, String side) { // side is blue or red, returned  = wrong parameters
         int side_int;
         if (side == "blue")

@@ -1,41 +1,79 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
+import edu.wpi.first.wpilibj2.command.WaitCommand;
+
+import edu.wpi.first.wpilibj.DoubleSolenoid;
+import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+
+import static edu.wpi.first.wpilibj2.command.Commands.waitUntil;
 
 public class Manipulator extends SubsystemBase {
 
-    ManipulatorState state = ManipulatorState.EMPTY;
+    private static Manipulator MANIPULATOR;
 
-    public void init() {}
+    ManipulatorState state = ManipulatorState.UP;
 
-    public ManipulatorState pickUp() {
-        if (state == ManipulatorState.FULL) {
-            return ManipulatorState.ERROR;
-        }
-        //TODO pick up
-        state = ManipulatorState.FULL;
-        return state;
+    DoubleSolenoid leftManipulatorSolenoid;
+    DoubleSolenoid rightManipulatorSolenoid;
+
+    DigitalInput leftButton;
+    DigitalInput rightButton;
+
+    public Manipulator(int leftButtonID, int rightButtonID) {
+        leftManipulatorSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 2, 3);
+        rightManipulatorSolenoid = new DoubleSolenoid(PneumaticsModuleType.CTREPCM, 4, 5);
+
+        leftButton = new DigitalInput(leftButtonID);
+        rightButton = new DigitalInput(rightButtonID);
     }
 
-    public ManipulatorState dropOff() {
-        if (state == ManipulatorState.EMPTY) {
-            return ManipulatorState.ERROR;
-        }
-        //TODO drop off
-        state = ManipulatorState.EMPTY;
-        return state;
+    public Command dropCoral() {
+        return Commands.runOnce(() -> {
+            leftManipulatorSolenoid.set(DoubleSolenoid.Value.kReverse);
+            rightManipulatorSolenoid.set(DoubleSolenoid.Value.kReverse);
+            state = ManipulatorState.DOWN;
+        });
+    }
+
+    public Command returnCoral() {
+        return Commands.runOnce(() -> {
+            leftManipulatorSolenoid.set(DoubleSolenoid.Value.kForward);
+            rightManipulatorSolenoid.set(DoubleSolenoid.Value.kForward);
+            state = ManipulatorState.UP;
+        });
+    }
+
+    public SequentialCommandGroup dropCoralAndReturn() {
+        return new SequentialCommandGroup(dropCoral(), waitUntil(() -> (state == ManipulatorState.DOWN)), returnCoral(), waitUntil((() -> (state == ManipulatorState.UP))));
     }
 
     public String getManipualtorState() {
         return state.toString();
     }
 
+    public boolean getLeftButtonState() {
+        return leftButton.get();
+    }
+
+    public boolean getRightButtonState() {
+        return leftButton.get();
+    }
+
+    public static Manipulator getInstance() {
+        if (MANIPULATOR == null) {
+            MANIPULATOR = new Manipulator(4, 5);
+        }
+        return MANIPULATOR;
+    }
+
     private enum ManipulatorState {
-        EMPTY,
-        FULL,
-        ERROR,
+        UP,
+        DOWN,
+
     }
 }

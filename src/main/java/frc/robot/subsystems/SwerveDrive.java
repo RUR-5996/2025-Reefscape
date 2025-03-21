@@ -18,8 +18,11 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Constants;
 import frc.robot.Constants.DriverConstants;
 import frc.robot.Constants.SwerveConstants;
+import edu.wpi.first.math.geometry.Pose2d;
+
 
 public class SwerveDrive extends SubsystemBase{
 
@@ -34,7 +37,7 @@ public class SwerveDrive extends SubsystemBase{
     double defaultAngle = 0;
     double rotationControllerOutput;
 
-    boolean fieldRelative = true; 
+    boolean fieldRelative = true;
     boolean assistedDrive = false;
     boolean rampToggle = false;
     boolean slowmode = false;
@@ -72,8 +75,8 @@ public class SwerveDrive extends SubsystemBase{
         angleHoldController.setTolerance(Math.toRadians(2)); // the usual drift
 
         rotationController = new PIDController(
-            SwerveConstants.P_ROTATION_CONTROLLER, 
-            SwerveConstants.I_ROTATION_CONTROLLER, 
+            SwerveConstants.P_ROTATION_CONTROLLER,
+            SwerveConstants.I_ROTATION_CONTROLLER,
             SwerveConstants.D_ROTATION_CONTROLLER);
         rotationController.enableContinuousInput(-180, 180);
         rotationController.setTolerance(2);
@@ -102,11 +105,11 @@ public class SwerveDrive extends SubsystemBase{
         }
         return SWERVE;
     }
-    
+
     public Command toggleSlowMode() { //TODO deprecate
         return Commands.runOnce(() -> {slowmode = !slowmode;});
     }
-    
+
     public void setSlowmodeFlag(boolean flag) {
         slowmode = flag;
     }
@@ -127,6 +130,20 @@ public class SwerveDrive extends SubsystemBase{
         m_odometry.resetPosition(newPose.getRotation(), DRIVETRAIN.getModulePositions(), newPose);
     }
 
+    public Command resetAtReef(Vision vision) {
+        return Commands.runOnce(() -> {
+            Pose2d newPose = Constants.PathplanningConstants.aprilTagPoseMap.get(vision.april(true));
+            m_odometry.resetPosition(newPose.getRotation(), DRIVETRAIN.getModulePositions(), newPose);
+        });
+    }
+
+    public Command resetGyroAtReef(Vision vision) {
+        return Commands.runOnce(() -> {
+            m_odometry.resetPosition(Constants.PathplanningConstants.aprilTagPoseMap.get(vision.april(true)).getRotation(), DRIVETRAIN.getModulePositions(), m_odometry.getEstimatedPosition());
+        });
+    }
+
+
     public boolean getAtGoal() {
         return rotationController.atSetpoint();
     }
@@ -141,7 +158,7 @@ public class SwerveDrive extends SubsystemBase{
 
     public double getGyroDegrees() {
         return getHeading().getDegrees();
-    }  
+    }
 
     public DoubleSupplier supplyOdometryDegrees() {
         DoubleSupplier angle = () -> getOdometryDegrees();
@@ -175,7 +192,7 @@ public class SwerveDrive extends SubsystemBase{
     public Pose2d getPose() {
         return robotPose;
     }
-    
+
     public static Rotation2d getHeading() {
         return gyro.getRotation2d();
     }
@@ -231,7 +248,7 @@ public class SwerveDrive extends SubsystemBase{
             rotation = deadzone(rightX) * deadzone(rightX) * Math.signum(rightX) * SwerveConstants.MAX_SPEED_RADIANSperSECOND * DriverConstants.TURN_GOVERNOR;
 
 
-            if(slowmode) { 
+            if(slowmode) {
                 xSpeed = xSpeed * DriverConstants.PRECISION_RATIO;
                 ySpeed = ySpeed * DriverConstants.PRECISION_RATIO;
                 rotation = rotation * DriverConstants.PRECISION_RATIO;

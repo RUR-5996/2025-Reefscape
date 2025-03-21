@@ -1,53 +1,67 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.PneumaticsControlModule;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.AutoConstants;
-import frc.robot.subsystems.DriveTrain;
-import frc.robot.subsystems.Elevator;
-import frc.robot.subsystems.Intake;
-import frc.robot.subsystems.LEDs;
-import frc.robot.subsystems.LimeLight;
-import frc.robot.subsystems.Pneumatics;
-import frc.robot.subsystems.SwerveDrive;
-import frc.robot.subsystems.Vision;
+import frc.robot.subsystems.*;
+import frc.robot.subsystems.Elevator.ElevatorState;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.RobotConfig;
+import frc.robot.ui.DashboardManager;
 
 public class RobotContainer {
 
-  private final CommandXboxController xBox = new CommandXboxController(0);
+  public final CommandXboxController xBox = new CommandXboxController(0);
+  public final CommandXboxController testBox = new CommandXboxController(1);
   private final SendableChooser<Command> autoChooser;
   private static SendableChooser<Command> autoBranchChooser;
 
-          static DigitalInput diginLeftBasket1 = new DigitalInput(0);
-          static DigitalInput diginLeftBasket2 = new DigitalInput(1);
-          static DigitalInput diginRightBasket1 = new DigitalInput(2);
-          static DigitalInput diginRightBasket2 = new DigitalInput(3);
+          //static DigitalInput diginLeftBasket1 = new DigitalInput(0);
+          //static DigitalInput diginLeftBasket2 = new DigitalInput(1);
+          //static DigitalInput diginRightBasket1 = new DigitalInput(2);
+          //static DigitalInput diginRightBasket2 = new DigitalInput(3);
 
           public Elevator ELEVATOR;
-          public Intake INTAKE;
+          public Manipulator MANIPULATOR;
+          public Intake LEFT_INTAKE;
+          public Intake RIGHT_INTAKE;
           public SwerveDrive SWERVE;
           public DriveTrain DRIVETRAIN;
-          private LEDs LEDS;
-          RobotConfig config;
-          public Pneumatics PNEUMATICS;
           public Vision VISION;
+          public Climber CLIMBER;
+          private LEDs LEDS;
+          public DashboardManager DASHBOARD;
 
-          public RobotContainer() {
+          private Trigger leftGrabMotor;
+          private Trigger rightGrabMotor;
+
+        RobotConfig config;
+
+    public RobotContainer() {
+            PneumaticsControlModule PCM = new PneumaticsControlModule(0);
+
             SWERVE = SwerveDrive.getInstance();
             DRIVETRAIN = DriveTrain.getInstance();
             LEDS = LEDs.getInstance();
             ELEVATOR = Elevator.getInstance();
+            MANIPULATOR = Manipulator.getInstance();
             VISION = Vision.getInstance();
-            INTAKE = new Intake();
+            CLIMBER = Climber.getInstance(PCM);
+            LEFT_INTAKE = new Intake(51, 50, 0, 1);
+            RIGHT_INTAKE = new Intake(53, 52, 2, 3);
+            DASHBOARD = new DashboardManager();
 
             SWERVE.setDefaultCommand(SWERVE.joystickDrive(xBox::getLeftX, xBox::getLeftY, xBox::getRightX, SWERVE));
+
+            leftGrabMotor = new Trigger(LEFT_INTAKE::getGrabState);
+            rightGrabMotor = new Trigger(RIGHT_INTAKE::getGrabState);
 
             configureBindings();
 
@@ -63,33 +77,60 @@ public class RobotContainer {
       }
 
       private void configureBindings() {
-        //xBox.b().toggleOnTrue(SWERVE.toggleSlowMode());
-
-        xBox.leftBumper().onTrue(Commands.runOnce(() -> {
+        /*xBox.leftBumper().onTrue(Commands.runOnce(() -> {
           double[] relativePosition = LimeLight.getRelativePos();
           SmartDashboard.putNumber("Position tx", relativePosition[0]);
           SmartDashboard.putNumber("Position ty", relativePosition[1]);
           SmartDashboard.putNumber("Position ta", relativePosition[2]);
           SmartDashboard.putNumber("AprilTagID", relativePosition[3]);
           LEDS.setColour(((int)relativePosition[3] % 2 == 0) ? Constants.ColourConstants.FLASHBANG : Constants.ColourConstants.PINK);
-        }));
+        }));*/
 
-        // xBox.a().onTrue(PNEUMATICS.leftIntake());
-        // xBox.x().onTrue(PNEUMATICS.rightIntake());
-        // xBox.y().onTrue(PNEUMATICS.Elevator1());
-        // xBox.rightBumper().onTrue(PNEUMATICS.Elevator2());
-        // xBox.leftBumper().onTrue(PNEUMATICS.Elevator3());
-        // xBox.x().onTrue(PNEUMATICS.toggleClimber());
+          //testBox.a().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE));
+          testBox.b().onTrue(RIGHT_INTAKE.intakeMid());
+          testBox.a().onTrue(RIGHT_INTAKE.intakeIn());
+          testBox.x().onTrue(RIGHT_INTAKE.intakeOut());
 
-        // xBox.a().onTrue(ELEVATOR.elevate(frc.robot.subsystems.Elevator.ElevatorState.DOWN));
-        // xBox.b().onTrue(ELEVATOR.elevate(frc.robot.subsystems.Elevator.ElevatorState.FLOOR1));
-        // xBox.x().onTrue(ELEVATOR.elevate(frc.robot.subsystems.Elevator.ElevatorState.FLOOR2));
-        // xBox.y().onTrue(ELEVATOR.elevate(frc.robot.subsystems.Elevator.ElevatorState.FLOOR3));
+          testBox.leftBumper().toggleOnTrue(RIGHT_INTAKE.grabCoral());
+          testBox.leftBumper().toggleOnFalse(RIGHT_INTAKE.stopGrab());
+          testBox.rightBumper().toggleOnTrue(RIGHT_INTAKE.releaseCoral());
+          testBox.rightBumper().toggleOnFalse(RIGHT_INTAKE.stopGrab());
 
-        xBox.a().onTrue(VISION.april());
-        xBox.b().onTrue(VISION.object());
+          //testBox.a().onTrue(RIGHT_INTAKE.grabCoral());
+          //testBox.b().onTrue(RIGHT_INTAKE.stopGrab());
+          //testBox.x().onTrue(RIGHT_INTAKE.releaseCoral());
+          //testBox.y().onTrue(ELEVATOR.elevate(ElevatorState.FLOOR0));
+          testBox.povDown().onTrue(ELEVATOR.elevate(ElevatorState.DOWN));
+          testBox.povLeft().onTrue(CLIMBER.tuneIn());
+          testBox.povRight().onTrue(CLIMBER.tuneOut());
+          testBox.povRight().toggleOnFalse(CLIMBER.stopTune());
+          testBox.povLeft().toggleOnFalse(CLIMBER.stopTune());
 
+          xBox.y().toggleOnTrue(CLIMBER.rodOut());
+          xBox.x().toggleOnTrue(CLIMBER.rodIn());
+          xBox.a().toggleOnTrue(CLIMBER.tuneIn());
+          xBox.a().toggleOnFalse(CLIMBER.stopTune());
+          xBox.b().toggleOnTrue(CLIMBER.tuneOut());
+          xBox.b().toggleOnFalse(CLIMBER.stopTune());
 
+          //xBox.a().onTrue(MANIPULATOR.dropCoralAndReturn());
+          //xBox.b().onTrue(ELEVATOR.checkElevator(ELEVATOR.manual, LEFT_INTAKE, RIGHT_INTAKE)); //raises to manually set height
+          //xBox.x().onTrue(ELEVATOR.autoDeploy(DASHBOARD, LEFT_INTAKE, RIGHT_INTAKE, MANIPULATOR));
+          //xBox.y().onTrue(Commands.either(CLIMBER.climb(), CLIMBER.out(Commands.sequence(ELEVATOR.checkElevator(Elevator.ElevatorState.DOWN, LEFT_INTAKE, RIGHT_INTAKE), Commands.parallel(LEFT_INTAKE.intakeMid(), RIGHT_INTAKE.intakeMid()))), () -> (CLIMBER.state == Climber.ClimberState.OUT)));
+
+          //xBox.leftTrigger().onTrue(LEFT_INTAKE.grabCoralSequence());
+          //xBox.rightTrigger().onTrue(RIGHT_INTAKE.grabCoralSequence());
+          //xBox.leftTrigger().whileFalse(LEFT_INTAKE.stopGrab());
+          //xBox.rightTrigger().whileFalse(RIGHT_INTAKE.stopGrab());
+          //leftGrabMotor.onFalse(LEFT_INTAKE.releaseCoralSequence());
+          //rightGrabMotor.onFalse(RIGHT_INTAKE.releaseCoralSequence());
+
+         // xBox.povUp().onTrue(LEFT_INTAKE.intakeIn().alongWith(RIGHT_INTAKE.intakeIn()));
+          //xBox.povLeft().onTrue(VISION.reefMove("left"));
+          //xBox.povRight().onTrue(VISION.reefMove("right"));
+
+          //xBox.back().onTrue(SWERVE.resetAtReef(VISION)); //TODO check if this is the right button
+          //xBox.start().onTrue(SWERVE.resetGyroAtReef(VISION));
       }
 
       private void loadPaths() {
@@ -125,6 +166,12 @@ public class RobotContainer {
 
       public void periodic() {
         VISION.report();
+        ELEVATOR.AlgaePrioUpdate();
+        ELEVATOR.checkManual();
+        ELEVATOR.report();
+        VISION.object(true);
+        LEFT_INTAKE.report();
+        RIGHT_INTAKE.report();
       }
 
       /*public static void check_for_auto_change_periodic() {
