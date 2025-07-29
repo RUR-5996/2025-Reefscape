@@ -40,6 +40,7 @@ public class RobotContainer {
           public Vision VISION;
 
           public RobotContainer() {
+          
             SWERVE = SwerveDrive.getInstance();
             DRIVETRAIN = DriveTrain.getInstance();
             LEDS = LEDs.getInstance();
@@ -63,7 +64,7 @@ public class RobotContainer {
       }
 
       private void configureBindings() {
-        //xBox.b().toggleOnTrue(SWERVE.toggleSlowMode());
+        xBox.b().onTrue(LEDS.setColour());
 
         xBox.leftBumper().onTrue(Commands.runOnce(() -> {
           double[] relativePosition = LimeLight.getRelativePos();
