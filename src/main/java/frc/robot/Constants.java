@@ -75,14 +75,14 @@ public final class Constants {
   }
 
   public static class ColourConstants {
-    public static double RAINBOW = .75;
-    public static double VIOLET = .5;
-    public static double PINK = -.37;
-    public static double FLASHBANG = -.91;
-    public static double BLUEGREEN = -.75;
-    public static double LIGHTBLUE = .37;
-    public static double DARKBLUE = .75;
-    public static double BLUEPINK = .5;
+    public static double RAINBOW = -.99;
+    public static double VIOLET = .91;
+    public static double PINK = .57;
+    public static double FLASHBANG = .93;
+    public static double BLUEGREEN = .79;
+    public static double LIGHTBLUE = .83;
+    public static double DARKBLUE = .85;
+    public static double BLUEPINK = .89;
   }
 
   public static class ElevatorConstants { //all measurements in mm

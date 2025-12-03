@@ -9,6 +9,8 @@ import frc.robot.Constants;
 public class LEDs extends SubsystemBase {
     Spark blinkin = new Spark(0);
     private double colour = Constants.ColourConstants.PINK;
+    private double[] colour_list = {Constants.ColourConstants.PINK, Constants.ColourConstants.VIOLET, Constants.ColourConstants.FLASHBANG, Constants.ColourConstants.RAINBOW, Constants.ColourConstants.BLUEGREEN, Constants.ColourConstants.DARKBLUE};
+    private int current_colour = 0;
 
     private static LEDs LEDS;
     
@@ -32,6 +34,19 @@ public class LEDs extends SubsystemBase {
         return Commands.runOnce(
             () -> {
                 colour = constant;
+            }
+        );
+    }
+
+    public Command changeColour() {
+        return Commands.runOnce(
+            () -> {
+                current_colour += 1;
+                if (current_colour == colour_list.length) {
+                    current_colour = 0;
+                }
+                System.out.println(current_colour);
+                colour = colour_list[current_colour];
             }
         );
     }

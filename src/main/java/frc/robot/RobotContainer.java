@@ -74,7 +74,7 @@ public class RobotContainer {
           LEDS.setColour(((int)relativePosition[3] % 2 == 0) ? Constants.ColourConstants.FLASHBANG : Constants.ColourConstants.PINK);
         }));
 
-        // xBox.a().onTrue(PNEUMATICS.leftIntake());
+        xBox.a().onTrue(LEDS.changeColour());
         // xBox.x().onTrue(PNEUMATICS.rightIntake());
         // xBox.y().onTrue(PNEUMATICS.Elevator1());
         // xBox.rightBumper().onTrue(PNEUMATICS.Elevator2());
