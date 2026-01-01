@@ -10,6 +10,7 @@ public class LEDs extends SubsystemBase {
     Spark blinkin = new Spark(0);
     private double colour = Constants.ColourConstants.PINK;
     private double[] colour_list = {Constants.ColourConstants.PINK, Constants.ColourConstants.VIOLET, Constants.ColourConstants.FLASHBANG, Constants.ColourConstants.RAINBOW, Constants.ColourConstants.BLUEGREEN, Constants.ColourConstants.DARKBLUE};
+    private double[] strobe_list = {Constants.ColourConstants.STROBEBLUE, Constants.ColourConstants.STROBEGOLD, Constants.ColourConstants.STROBERED, Constants.ColourConstants.STROBEWHITE};
     private int current_colour = 0;
 
     private static LEDs LEDS;
@@ -37,7 +38,6 @@ public class LEDs extends SubsystemBase {
             }
         );
     }
-
     public Command changeColour() {
         return Commands.runOnce(
             () -> {
@@ -47,6 +47,13 @@ public class LEDs extends SubsystemBase {
                 }
                 System.out.println(current_colour);
                 colour = colour_list[current_colour];
+            }
+        );
+    }
+    public Command indicator(int index) {
+        return Commands.runOnce(
+            () -> {
+                colour = strobe_list[index];
             }
         );
     }
