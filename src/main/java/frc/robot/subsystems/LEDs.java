@@ -51,10 +51,10 @@ public class LEDs extends SubsystemBase {
         );
     }
     public Command indicator(int index) {
-        return Commands.runOnce(
-            () -> {
-                colour = strobe_list[index];
-            }
-        );
+        return Commands.sequence(
+        Commands.runOnce(() -> colour = strobe_list[index]),
+        Commands.waitSeconds(0.5),
+        Commands.runOnce(() -> colour = 0.99)
+    );
     }
 }

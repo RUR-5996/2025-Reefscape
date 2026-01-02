@@ -75,6 +75,8 @@ public class RobotContainer {
         }));
 
         xBox.a().onTrue(LEDS.changeColour());
+        xBox.b().onTrue(LEDS.indicator(0));
+        xBox.x().onTrue(LEDS.indicator(1));
         // xBox.x().onTrue(PNEUMATICS.rightIntake());
         // xBox.y().onTrue(PNEUMATICS.Elevator1());
         // xBox.rightBumper().onTrue(PNEUMATICS.Elevator2());
