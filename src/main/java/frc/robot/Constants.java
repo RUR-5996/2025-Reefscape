@@ -1,6 +1,7 @@
 package frc.robot;
 
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.StaticFeedforwardSignValue;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 
@@ -83,6 +84,10 @@ public final class Constants {
     public static double LIGHTBLUE = .83;
     public static double DARKBLUE = .85;
     public static double BLUEPINK = .89;
+    public static double STROBERED = -.11;
+    public static double STROBEBLUE = -.09;
+    public static double STROBEGOLD = -.07;
+    public static double STROBEWHITE = -.05;
   }
 
   public static class ElevatorConstants { //all measurements in mm
