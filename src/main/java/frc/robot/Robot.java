@@ -8,38 +8,28 @@ import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.Constants.ColourConstants;
-import frc.robot.subsystems.DriveTrain;
 import frc.robot.subsystems.LEDs;
-import frc.robot.util.Report;
-import frc.robot.util.ScoringTracker;
 
 public class Robot extends TimedRobot{
   public static Command m_autonomousCommand;
 
   RobotContainer m_robotContainer;
-  Report REPORT;
-  DriveTrain DRIVETRAIN;
   LEDs LEDS;
 
   @Override
   public void robotInit() {
-    ScoringTracker scoringTracker = new ScoringTracker();
     m_robotContainer = new RobotContainer();
-    REPORT = Report.getInstance();
-    DRIVETRAIN = DriveTrain.getInstance();
     LEDS = LEDs.getInstance();
   }
 
   @Override
   public void robotPeriodic() {
     CommandScheduler.getInstance().run();
-    REPORT.periodic();
     m_robotContainer.periodic();
   }
 
   @Override
   public void disabledInit() {
-    DRIVETRAIN.setSteerToCoast();
     LEDS.setColour(ColourConstants.DARKBLUE);
   }
 
@@ -48,13 +38,7 @@ public class Robot extends TimedRobot{
 
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
 
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.schedule();
-    } else {
-      System.out.println("outonomous command null");
-    }
     LEDS.setColour(ColourConstants.PINK);
   }
 
@@ -65,9 +49,7 @@ public class Robot extends TimedRobot{
 
   @Override
   public void teleopInit() {
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-    }
+   
   }
 
   @Override
@@ -80,10 +62,6 @@ public class Robot extends TimedRobot{
 
   @Override
   public void testPeriodic() {
-    DRIVETRAIN.flModule.testModule();
-    DRIVETRAIN.frModule.testModule();
-    DRIVETRAIN.rlModule.testModule();
-    DRIVETRAIN.rrModule.testModule();
   }
 
   @Override
